@@ -11,10 +11,11 @@
 using System;
 using System.Reflection;
 
+[assembly: Microsoft.Extensions.Configuration.UserSecrets.UserSecretsIdAttribute("1c848ecf-d786-4932-be7d-029362af7170")]
 [assembly: System.Reflection.AssemblyCompanyAttribute("transitFlow.api")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+cc0cb221a3a31bd6823fa3a0de39cbea7319b680")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+f02ed9889d3c9040a67d222afc6eb4802cb533fd")]
 [assembly: System.Reflection.AssemblyProductAttribute("transitFlow.api")]
 [assembly: System.Reflection.AssemblyTitleAttribute("transitFlow.api")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
