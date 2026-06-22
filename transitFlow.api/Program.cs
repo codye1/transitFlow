@@ -30,6 +30,7 @@ builder.Services.AddDbContext<TransitFlowDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("TransitFlowConnectionString")));
 
 builder.Services.AddScoped<IRefreshTokenRepository, RefreshTokenRepository>();
+builder.Services.AddScoped<IStopRepository, StopRepository>();
 
 builder.Services.AddIdentity<AppUser, IdentityRole<int>>(options =>
 {
