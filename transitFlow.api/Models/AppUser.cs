@@ -1,16 +1,10 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using Microsoft.AspNetCore.Identity;
+using System.ComponentModel.DataAnnotations;
 
 namespace transitFlow.api.Models
 {
-    public class User
+    public class AppUser : IdentityUser<int>
     {
-        [Key]
-        public int Id { get; set; }
-
-        [Required]
-        public string Role { get; set; }
-
-        [Required]
         public DateTime CreatedAt { get; set; }
 
         // Navigation properties

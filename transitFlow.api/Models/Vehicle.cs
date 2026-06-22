@@ -26,6 +26,6 @@ namespace transitFlow.api.Models
 
         // Navigation properties
         [ForeignKey(nameof(CreatedById))]
-        public virtual User Creator { get; set; }
+        public virtual AppUser Creator { get; set; }
     }
 }

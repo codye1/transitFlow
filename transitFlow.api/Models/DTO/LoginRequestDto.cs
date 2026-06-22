@@ -1,0 +1,13 @@
+﻿using System.ComponentModel.DataAnnotations;
+
+namespace transitFlow.api.Models.DTO
+{
+    public class LoginRequestDto
+    {
+        [Required]
+        [EmailAddress]
+        public string Email { get; set; } = null!;
+        [Required]
+        public string Password { get; set; } = null!;
+    }
+}
