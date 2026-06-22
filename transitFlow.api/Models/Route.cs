@@ -22,7 +22,7 @@ public class Route
 
     // Navigation properties
     [ForeignKey(nameof(CreatedById))]
-    public virtual User Creator { get; set; }
+    public virtual AppUser Creator { get; set; }
 
     public virtual ICollection<RouteStop> RouteStops { get; set; } = new List<RouteStop>();
 }
