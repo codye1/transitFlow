@@ -3,6 +3,20 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace transitFlow.api.Models
 {
+    public enum VehicleType
+    {
+        Bus,
+        Minibus,
+        Trolleybus,
+        Tram,
+    }
+
+    public enum VehicleStatus
+    {
+        OnRoute,
+        AtDepot,
+        Maintenance
+    }
     public class Vehicle
     {
         [Key]
@@ -12,14 +26,14 @@ namespace transitFlow.api.Models
         public string PlateNumber { get; set; }
 
         [Required]
-        public string Type { get; set; }
+        public VehicleType Type { get; set; }
 
         [Required]
         public string Model { get; set; }
 
         public int? RouteId { get; set; }
         public int Capacity { get; set; }
-
+        public VehicleStatus Status { get; set; }
         [Required]
         public DateTime CreatedAt { get; set; }
 

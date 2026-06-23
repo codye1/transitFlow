@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using transitFlow.api.Data;
 
@@ -11,9 +12,11 @@ using transitFlow.api.Data;
 namespace transitFlow.api.Migrations
 {
     [DbContext(typeof(TransitFlowDbContext))]
-    partial class TransitFlowDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260623060255_AddStatusAndTypeEnumForVehicle")]
+    partial class AddStatusAndTypeEnumForVehicle
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -399,7 +402,7 @@ namespace transitFlow.api.Migrations
 
                     b.Property<string>("PlateNumber")
                         .IsRequired()
-                        .HasColumnType("nvarchar(450)");
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<int?>("RouteId")
                         .HasColumnType("int");
@@ -413,9 +416,6 @@ namespace transitFlow.api.Migrations
                     b.HasKey("Id");
 
                     b.HasIndex("CreatedById");
-
-                    b.HasIndex("PlateNumber")
-                        .IsUnique();
 
                     b.ToTable("Vehicles");
                 });

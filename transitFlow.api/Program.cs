@@ -8,6 +8,7 @@ using transitFlow.api.Data;
 using transitFlow.api.Models;
 using transitFlow.api.Repositories;
 using transitFlow.api.Repositories.Route;
+using transitFlow.api.Repositories.Vehicle;
 using transitFlow.api.Services.TokenService;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -22,7 +23,14 @@ var logger = new LoggerConfiguration()
 builder.Logging.ClearProviders();
 builder.Logging.AddSerilog(logger);
 
-builder.Services.AddControllers();
+
+
+builder.Services.AddControllers()
+    .AddJsonOptions(options=>
+    {
+        options.JsonSerializerOptions.Converters.Add(new System.Text.Json.Serialization.JsonStringEnumConverter());
+    }
+    );
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
@@ -33,6 +41,7 @@ builder.Services.AddDbContext<TransitFlowDbContext>(options =>
 builder.Services.AddScoped<IRefreshTokenRepository, RefreshTokenRepository>();
 builder.Services.AddScoped<IStopRepository, StopRepository>();
 builder.Services.AddScoped<IRouteRepository, RouteRepository>();
+builder.Services.AddScoped<IVehicleRepository, VehicleRepository>();
 
 builder.Services.AddIdentity<AppUser, IdentityRole<int>>(options =>
 {
