@@ -10,7 +10,7 @@ namespace transitFlow.api.Repositories
         Task<StopEntity?> GetByIdAsync(int id);
         Task<StopEntity> CreateAsync(StopEntity stop);
         Task<bool> DeleteAsync(StopEntity stop);
-
+        Task<IEnumerable<StopEntity>> GetStopsCursorAsync(int? afterId, int take, int? routeId = null);
         Task<bool> AreStopsValidAsync(List<int> stopIds);
     }
 }

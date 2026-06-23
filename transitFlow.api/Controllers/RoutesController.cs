@@ -24,11 +24,21 @@ namespace transitFlow.api.Controllers
 
         // GET: /routes
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<RouteResponseDto>>> GetRoutes()
+        public async Task<ActionResult> GetRoutes([FromQuery] int? afterId, [FromQuery] int take = 10)
         {
-            var routes = await _routeRepository.GetAllRoutesAsync();
+            if (take < 1 || take > 100) take = 10;
 
-            var response = routes.Select(r => new RouteResponseDto
+            var routes = await _routeRepository.GetRoutesCursorAsync(afterId, take);
+            var routeList = routes.ToList();
+
+            bool hasMore = routeList.Count > take;
+
+            if (hasMore)
+            {
+                routeList.RemoveAt(take);
+            }
+
+            var response = routeList.Select(r => new RouteResponseDto
             {
                 Id = r.Id,
                 Number = r.Number,
@@ -38,9 +48,13 @@ namespace transitFlow.api.Controllers
                     .OrderBy(rs => rs.SequenceNumber)
                     .Select(rs => rs.StopId)
                     .ToList()
-            });
+            }).ToList();
 
-            return Ok(response);
+            return Ok(new
+            {
+                Data = response,
+                HasMore = hasMore
+            });
         }
 
         // POST: /routes
@@ -57,7 +71,6 @@ namespace transitFlow.api.Controllers
 
             if (!await _stopRepository.AreStopsValidAsync(dto.SelectedStops))
                 return BadRequest("One or more selected stops do not exist.");
-            
 
             var newRoute = new RouteEntity
             {
