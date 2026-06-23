@@ -42,5 +42,12 @@ namespace transitFlow.api.Repositories
             return true;
         }
 
+        public async Task<bool> AreStopsValidAsync(List<int> stopIds)
+        {
+            if (stopIds == null || !stopIds.Any()) return true;
+            var uniqueIds = stopIds.Distinct().ToList();
+            var count = await _context.Stops.AsNoTracking().Where(s => uniqueIds.Contains(s.Id)).CountAsync();
+            return count == uniqueIds.Count;
+        }
     }
 }

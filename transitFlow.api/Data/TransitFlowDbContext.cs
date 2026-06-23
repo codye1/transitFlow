@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using transitFlow.api.Models;
+using RouteEntity = transitFlow.api.Models.Route;
 
 namespace transitFlow.api.Data
 {
@@ -14,7 +15,7 @@ namespace transitFlow.api.Data
         public DbSet<AppUser> Users { get; set; }
         public DbSet<Stop> Stops { get; set; }
         public DbSet<Vehicle> Vehicles { get; set; }    
-        public DbSet<Route> Routes { get; set; }    
+        public DbSet<RouteEntity> Routes { get; set; }    
         public DbSet<RouteStop> RouteStops { get; set; }
         public DbSet<RefreshToken> RefreshTokens { get; set; }
 
@@ -34,7 +35,7 @@ namespace transitFlow.api.Data
                 .HasForeignKey(rs => rs.StopId)
                 .OnDelete(DeleteBehavior.Cascade);
 
-            modelBuilder.Entity<Route>()
+            modelBuilder.Entity<RouteEntity>()
                 .HasOne(r => r.Creator)
                 .WithMany(u => u.CreatedRoutes)
                 .HasForeignKey(r => r.CreatedById)
@@ -46,7 +47,7 @@ namespace transitFlow.api.Data
                 .HasForeignKey(s => s.CreatedById)
                 .OnDelete(DeleteBehavior.Restrict);
 
-            modelBuilder.Entity<Route>()
+            modelBuilder.Entity<RouteEntity>()
                 .HasIndex(r => r.Number)
                 .IsUnique();
 

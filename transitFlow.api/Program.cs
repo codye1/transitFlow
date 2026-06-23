@@ -7,6 +7,7 @@ using System.Text;
 using transitFlow.api.Data;
 using transitFlow.api.Models;
 using transitFlow.api.Repositories;
+using transitFlow.api.Repositories.Route;
 using transitFlow.api.Services.TokenService;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -31,6 +32,7 @@ builder.Services.AddDbContext<TransitFlowDbContext>(options =>
 
 builder.Services.AddScoped<IRefreshTokenRepository, RefreshTokenRepository>();
 builder.Services.AddScoped<IStopRepository, StopRepository>();
+builder.Services.AddScoped<IRouteRepository, RouteRepository>();
 
 builder.Services.AddIdentity<AppUser, IdentityRole<int>>(options =>
 {
