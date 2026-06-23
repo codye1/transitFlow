@@ -31,6 +31,13 @@ namespace transitFlow.api.Controllers
 
             var vehicleList = vehicles.ToList();
 
+            bool hasMore = vehicleList.Count > take;
+
+            if (hasMore)
+            {
+                vehicleList.RemoveAt(take);
+            }
+
             var itemsResponse = vehicleList.Select(v => new VehicleResponseDto
             {
                 Id = v.Id,
@@ -42,8 +49,6 @@ namespace transitFlow.api.Controllers
                 CreatedAt = v.CreatedAt,
                 CreatedById = v.CreatedById
             }).ToList();
-
-            bool hasMore = vehicleList.Count > take;
 
             return Ok(new
             {

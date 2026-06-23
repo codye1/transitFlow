@@ -49,5 +49,25 @@ namespace transitFlow.api.Repositories
             var count = await _context.Stops.AsNoTracking().Where(s => uniqueIds.Contains(s.Id)).CountAsync();
             return count == uniqueIds.Count;
         }
+
+        public async Task<IEnumerable<StopEntity>> GetStopsCursorAsync(int? afterId, int take, int? routeId = null)
+        {
+            var query = _context.Stops.AsNoTracking();
+
+            if (routeId.HasValue)
+            {
+                query = query.Where(s => s.RouteStops.Any(rs => rs.RouteId == routeId.Value));
+            }
+                                                                                                        
+            if (afterId.HasValue && afterId.Value > 0)
+            {
+                query = query.Where(s => s.Id > afterId.Value);
+            }
+
+            return await query
+                .OrderBy(s => s.Id)
+                .Take(take + 1)
+                .ToListAsync();
+        }
     }
 }

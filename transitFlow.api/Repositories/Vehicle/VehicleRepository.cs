@@ -26,7 +26,7 @@ namespace transitFlow.api.Repositories.Vehicle
 
             return await query
                 .OrderBy(v => v.Id) 
-                .Take(take)
+                .Take(take+1)
                 .ToListAsync();
         }
 

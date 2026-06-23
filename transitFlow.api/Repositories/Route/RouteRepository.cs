@@ -45,5 +45,22 @@ namespace transitFlow.api.Repositories
             await _context.SaveChangesAsync();
             return true;
         }
+
+        public async Task<IEnumerable<RouteEntity>> GetRoutesCursorAsync(int? afterId, int take)
+        {
+            IQueryable<RouteEntity> query = _context.Routes
+                .AsNoTracking()
+                .Include(r => r.RouteStops);
+
+            if (afterId.HasValue && afterId.Value > 0)
+            {
+                query = query.Where(r => r.Id > afterId.Value);
+            }
+
+            return await query
+                .OrderBy(r => r.Id)
+                .Take(take + 1)
+                .ToListAsync();
+        }
     }
 }

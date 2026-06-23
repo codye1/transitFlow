@@ -20,25 +20,34 @@ namespace transitFlow.api.Controllers
         }
 
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<StopResponseDto>>> GetStops([FromQuery] int? routeId = null)
+        public async Task<ActionResult> GetStops([FromQuery] int? afterId, [FromQuery] int take = 10, [FromQuery] int? routeId = null)
         {
-            var query = _stopRepository.GetQueryable();
+            if (take < 1 || take > 100) take = 10;
 
-            if (routeId.HasValue)
-                query = query.Where(s => s.RouteStops.Any(rs => rs.RouteId == routeId.Value));
+            var stops = await _stopRepository.GetStopsCursorAsync(afterId, take, routeId);
+            var stopList = stops.ToList();
 
-            var response = await query
-                .Select(s => new StopResponseDto
-                {
-                    Id = s.Id,
-                    Name = s.Name,
-                    Latitude = s.Latitude,
-                    Longitude = s.Longitude,
-                    CreatedAt = s.CreatedAt,
-                })
-                .ToListAsync();
+            bool hasMore = stopList.Count > take;
 
-            return Ok(response);
+            if (hasMore)
+            {
+                stopList.RemoveAt(take);
+            }
+
+            var itemsResponse = stopList.Select(s => new StopResponseDto
+            {
+                Id = s.Id,
+                Name = s.Name,
+                Latitude = s.Latitude,
+                Longitude = s.Longitude,
+                CreatedAt = s.CreatedAt
+            }).ToList();
+
+            return Ok(new
+            {
+                Data = itemsResponse,
+                HasMore = hasMore
+            });
         }
 
         [Authorize]

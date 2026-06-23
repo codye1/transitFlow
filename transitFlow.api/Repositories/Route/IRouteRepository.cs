@@ -8,5 +8,6 @@ namespace transitFlow.api.Repositories.Route
         Task<RouteEntity?> GetRouteByIdAsync(int id);
         Task<RouteEntity> CreateRouteAsync(RouteEntity route);
         Task<bool> DeleteRouteAsync(int id);
+        Task<IEnumerable<RouteEntity>> GetRoutesCursorAsync(int? afterId, int take);
     }   
 }
