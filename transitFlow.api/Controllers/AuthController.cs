@@ -16,7 +16,7 @@ namespace transitFlow.Controllers
         private readonly SignInManager<AppUser> _signInManager;
         private readonly ITokenService _tokenService;
         private readonly IRefreshTokenRepository _tokenRepository; 
-
+                                                                                                            
         public AuthController(
             UserManager<AppUser> userManager,
             SignInManager<AppUser> signInManager,
@@ -116,7 +116,7 @@ namespace transitFlow.Controllers
             var refreshTokenValue = _tokenService.GenerateRefreshToken();
 
             var refreshToken = new RefreshToken
-            {
+            {                                                                                                               
                 UserId = user.Id,
                 Token = refreshTokenValue,
                 CreatedAt = DateTime.UtcNow,

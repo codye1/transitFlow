@@ -17,6 +17,7 @@ namespace transitFlow.api.Models
         [Required]
         public string Model { get; set; }
 
+        public int? RouteId { get; set; }
         public int Capacity { get; set; }
 
         [Required]

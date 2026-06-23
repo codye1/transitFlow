@@ -19,22 +19,24 @@ namespace transitFlow.api.Controllers
             _stopRepository = stopRepository;
         }
 
-        [HttpGet]                                                    
-        public async Task<ActionResult<IEnumerable<StopResponseDto>>> GetStops([FromQuery] int routeId)
+        [HttpGet]
+        public async Task<ActionResult<IEnumerable<StopResponseDto>>> GetStops([FromQuery] int? routeId = null)
         {
-           
+            var query = _stopRepository.GetQueryable();
 
-            var response = await _stopRepository.GetQueryable()
-                 .Where(s => s.RouteStops.Any(rs => rs.RouteId == routeId))
-                 .Select(s => new StopResponseDto
-                 {
-                     Id = s.Id,
-                     Name = s.Name, 
-                     Latitude = s.Latitude,
-                     Longitude = s.Longitude,
-                     CreatedAt = s.CreatedAt,
-                 })
-                 .ToListAsync(); 
+            if (routeId.HasValue)
+                query = query.Where(s => s.RouteStops.Any(rs => rs.RouteId == routeId.Value));
+
+            var response = await query
+                .Select(s => new StopResponseDto
+                {
+                    Id = s.Id,
+                    Name = s.Name,
+                    Latitude = s.Latitude,
+                    Longitude = s.Longitude,
+                    CreatedAt = s.CreatedAt,
+                })
+                .ToListAsync();
 
             return Ok(response);
         }

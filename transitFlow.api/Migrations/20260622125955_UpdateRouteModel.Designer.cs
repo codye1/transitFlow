@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using transitFlow.api.Data;
 
@@ -11,9 +12,11 @@ using transitFlow.api.Data;
 namespace transitFlow.api.Migrations
 {
     [DbContext(typeof(TransitFlowDbContext))]
-    partial class TransitFlowDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260622125955_UpdateRouteModel")]
+    partial class UpdateRouteModel
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -178,6 +181,42 @@ namespace transitFlow.api.Migrations
                     b.ToTable("AspNetUserTokens", (string)null);
                 });
 
+            modelBuilder.Entity("Route", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Color")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("CreatedById")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Number")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CreatedById");
+
+                    b.HasIndex("Number")
+                        .IsUnique();
+
+                    b.ToTable("Routes");
+                });
+
             modelBuilder.Entity("RouteStop", b =>
                 {
                     b.Property<int>("Id")
@@ -187,9 +226,6 @@ namespace transitFlow.api.Migrations
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<int>("RouteId")
-                        .HasColumnType("int");
-
-                    b.Property<int>("SequenceNumber")
                         .HasColumnType("int");
 
                     b.Property<int>("StopId")
@@ -307,42 +343,6 @@ namespace transitFlow.api.Migrations
                     b.HasIndex("UserId");
 
                     b.ToTable("RefreshTokens");
-                });
-
-            modelBuilder.Entity("transitFlow.api.Models.Route", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<string>("Color")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<int>("CreatedById")
-                        .HasColumnType("int");
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("Number")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(450)");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("CreatedById");
-
-                    b.HasIndex("Number")
-                        .IsUnique();
-
-                    b.ToTable("Routes");
                 });
 
             modelBuilder.Entity("transitFlow.api.Models.Stop", b =>
@@ -463,9 +463,20 @@ namespace transitFlow.api.Migrations
                         .IsRequired();
                 });
 
+            modelBuilder.Entity("Route", b =>
+                {
+                    b.HasOne("transitFlow.api.Models.AppUser", "Creator")
+                        .WithMany("CreatedRoutes")
+                        .HasForeignKey("CreatedById")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Creator");
+                });
+
             modelBuilder.Entity("RouteStop", b =>
                 {
-                    b.HasOne("transitFlow.api.Models.Route", "Route")
+                    b.HasOne("Route", "Route")
                         .WithMany("RouteStops")
                         .HasForeignKey("RouteId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -493,17 +504,6 @@ namespace transitFlow.api.Migrations
                     b.Navigation("User");
                 });
 
-            modelBuilder.Entity("transitFlow.api.Models.Route", b =>
-                {
-                    b.HasOne("transitFlow.api.Models.AppUser", "Creator")
-                        .WithMany("CreatedRoutes")
-                        .HasForeignKey("CreatedById")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.Navigation("Creator");
-                });
-
             modelBuilder.Entity("transitFlow.api.Models.Stop", b =>
                 {
                     b.HasOne("transitFlow.api.Models.AppUser", "Creator")
@@ -526,6 +526,11 @@ namespace transitFlow.api.Migrations
                     b.Navigation("Creator");
                 });
 
+            modelBuilder.Entity("Route", b =>
+                {
+                    b.Navigation("RouteStops");
+                });
+
             modelBuilder.Entity("transitFlow.api.Models.AppUser", b =>
                 {
                     b.Navigation("CreatedRoutes");
@@ -533,11 +538,6 @@ namespace transitFlow.api.Migrations
                     b.Navigation("CreatedStops");
 
                     b.Navigation("CreatedVehicles");
-                });
-
-            modelBuilder.Entity("transitFlow.api.Models.Route", b =>
-                {
-                    b.Navigation("RouteStops");
                 });
 
             modelBuilder.Entity("transitFlow.api.Models.Stop", b =>
