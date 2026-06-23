@@ -23,6 +23,10 @@ namespace transitFlow.api.Data
         {
             base.OnModelCreating(modelBuilder);
 
+            modelBuilder.Entity<Vehicle>()
+                .HasIndex(rs => rs.PlateNumber)
+                .IsUnique();
+
             modelBuilder.Entity<RouteStop>()
                 .HasOne(rs => rs.Route)
                 .WithMany(r => r.RouteStops)
