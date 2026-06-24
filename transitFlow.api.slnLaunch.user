@@ -1,0 +1,15 @@
+[
+  {
+    "Name": "New Profile",
+    "Projects": [
+      {
+        "Path": "transitFlow.api\\transitFlow.api.csproj",
+        "Action": "Start"
+      },
+      {
+        "Path": "transitionFlow.mvc\\TransitFlow.mvc.csproj",
+        "Action": "Start"
+      }
+    ]
+  }
+]

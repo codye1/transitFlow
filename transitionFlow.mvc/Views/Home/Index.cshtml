@@ -17,6 +17,9 @@
     </div>
     <aside class="sidebar">
         <h3 class="sidebar-title">Список зупинок</h3>
+        <button id="check-auth">Test auth</button>
+        <p id="authenticated" style="display:none">Authenticated</p>
+        <button id="check-logout">Check logout</button>
         <div class="stop-list">
             @foreach (var stop in Model.Stops)
             {
@@ -42,5 +45,5 @@
             vehicles: @Html.Raw(ViewBag.VehiclesJson)
         };
     </script>
-    <script src="~/js/transport-map.js" asp-append-version="true"></script>
+    <script src="~/js/helpers/transport-map.js" asp-append-version="true"></script>
 }

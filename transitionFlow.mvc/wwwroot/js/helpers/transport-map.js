@@ -1,8 +1,8 @@
-﻿document.addEventListener("DOMContentLoaded", function () {
+﻿$(function () {
     const DEFAULT_CENTER = [48.1444, 23.0325];
     const DEFAULT_ZOOM = 14;
 
-    if (!document.getElementById('transport-map')) return;
+    if ($('#transport-map').length === 0) return;
 
     const map = L.map('transport-map').setView(DEFAULT_CENTER, DEFAULT_ZOOM);
 
@@ -22,14 +22,16 @@
     }
 
     const stopColorMap = {};
-    routes.forEach(route => {
+
+    $.each(routes, function (index, route) {
         if (route.stops) {
-            route.stops.forEach(stopId => {
+            $.each(route.stops, function (idx, stopId) {
                 stopColorMap[stopId] = route.color || '#3B82F6';
             });
         }
     });
-    stops.forEach(stop => {
+
+    $.each(stops, function (index, stop) {
         const markerColor = stopColorMap[stop.id] || '#6B7280';
         const typeLabel = stop.type === 'combined' ? 'Комбінована' : 'Стандартна';
 
