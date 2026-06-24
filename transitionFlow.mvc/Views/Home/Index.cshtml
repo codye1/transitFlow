@@ -1,0 +1,46 @@
+﻿@model TransitFlow.mvc.Models.TransitViewModel
+
+@{
+    ViewData["Title"] = "TransitSim - Головна";
+}
+
+@section Styles {
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <link rel="stylesheet" href="~/css/home.css" asp-append-version="true" />
+}
+
+<div class="main-layout">
+    <div class="stats-container">
+        <div class="stat-badge">Маршрути: <b>@Model.Routes.Count</b></div>
+        <div class="stat-badge">Зупинки: <b>@Model.Stops.Count</b></div>
+        <div class="stat-badge">Транспорт: <b>@Model.Vehicles.Count</b></div>
+    </div>
+    <aside class="sidebar">
+        <h3 class="sidebar-title">Список зупинок</h3>
+        <div class="stop-list">
+            @foreach (var stop in Model.Stops)
+            {
+                <div class="stop-item">
+                    <span>📍</span>
+                    <div class="stop-name"><b>@stop.Name</b></div>
+                </div>
+            }
+        </div>
+    </aside>
+
+    <section class="map-container">
+        <div id="transport-map"></div>
+    </section>
+</div>
+
+@section Scripts {
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script>
+        window.TransitData = {
+            routes: @Html.Raw(ViewBag.RoutesJson),
+            stops: @Html.Raw(ViewBag.StopsJson),
+            vehicles: @Html.Raw(ViewBag.VehiclesJson)
+        };
+    </script>
+    <script src="~/js/transport-map.js" asp-append-version="true"></script>
+}
