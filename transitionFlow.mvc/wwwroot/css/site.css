@@ -1,0 +1,84 @@
+@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Unbounded:wght@500;700&display=swap');
+
+:root {
+    --font-body: 'Space Grotesk', 'Segoe UI', system-ui, sans-serif;
+    --font-display: 'Unbounded', 'Space Grotesk', system-ui, sans-serif;
+    --color-bg: #ffffff;
+    --color-surface: oklch(98.5% 0.002 247.839);
+    --color-surface-muted: oklch(96.7% 0.003 264.542);
+    --color-text: #09090b;
+    --color-muted: #71717a;
+    --color-border: #e4e4e7;
+    --color-accent: #3b82f6;
+    --color-on-accent: #ffffff;
+    --color-accent-hover: rgba(59, 130, 246, 0.2);
+    --color-info-bg: rgba(59, 130, 246, 0.1);
+    --color-info-border: rgba(59, 130, 246, 0.3);
+    --color-info-text: #3b82f6;
+    --color-warning-bg: rgba(245, 158, 11, 0.1);
+    --color-warning-border: rgba(245, 158, 11, 0.3);
+    --color-warning-text: #b45309;
+    --color-warning-solid: #f59e0b;
+    --space-1: 0.25rem;
+    --space-2: 0.5rem;
+    --space-3: 0.75rem;
+    --space-4: 1rem;
+    --space-5: 1.5rem;
+    --space-6: 2rem;
+    --space-7: 2.5rem;
+    --space-8: 3rem;
+    --sidebar-w: 20rem;
+    --map-min-h: 600px;
+    --radius-sm: 0.25rem;
+    --radius-md: 0.5rem;
+    --radius-lg: 0.75rem;
+    --icon-vehicle-size: 32px;
+    --icon-stop-size: 14px;
+}
+
+[data-theme='dark'] {
+    --color-bg: #09090b;
+    --color-surface: #18181b;
+    --color-surface-muted: #27272a;
+    --color-text: #fafafa;
+    --color-muted: #a1a1aa;
+    --color-border: #27272a;
+    --color-warning-text: #fbbf24;
+}
+
+* {
+    box-sizing: border-box;
+    padding: 0;
+    margin: 0;
+}
+
+body {
+    font-family: var(--font-body);
+    background-color: var(--color-surface-muted);
+    color: var(--color-text);
+    margin: 0;
+}
+
+
+header {
+    background-color: var(--color-bg);
+    border-bottom: 1px solid var(--color-border);
+    padding: var(--space-4) var(--space-5);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+.header-title {
+    font-family: var(--font-display);
+    font-size: 1.25rem;
+    font-weight: 700;
+    margin: 0;
+}
+
+.header-subtitle {
+    font-size: 0.75rem;
+    color: var(--color-muted);
+    margin: var(--space-1) 0 0 0;
+}

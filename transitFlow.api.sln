@@ -1,9 +1,11 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
-VisualStudioVersion = 17.14.37328.6 d17.14
+VisualStudioVersion = 17.14.37328.6
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "transitFlow.api", "transitFlow.api\transitFlow.api.csproj", "{D5717125-71BC-415D-91E3-C099F0EC8951}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TransitFlow.mvc", "transitionFlow.mvc\TransitFlow.mvc.csproj", "{14B40739-2CBC-45F0-99B9-776C16A55C69}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -15,6 +17,10 @@ Global
 		{D5717125-71BC-415D-91E3-C099F0EC8951}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{D5717125-71BC-415D-91E3-C099F0EC8951}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{D5717125-71BC-415D-91E3-C099F0EC8951}.Release|Any CPU.Build.0 = Release|Any CPU
+		{14B40739-2CBC-45F0-99B9-776C16A55C69}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{14B40739-2CBC-45F0-99B9-776C16A55C69}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{14B40739-2CBC-45F0-99B9-776C16A55C69}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{14B40739-2CBC-45F0-99B9-776C16A55C69}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
