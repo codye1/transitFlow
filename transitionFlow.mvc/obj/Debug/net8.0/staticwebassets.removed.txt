@@ -1,0 +1,3 @@
+D:\С#\transitFlow.api\transitionFlow.mvc\wwwroot\js\handleApiErrors.js
+D:\С#\transitFlow.api\transitionFlow.mvc\wwwroot\js\transport-map.js
+D:\С#\transitFlow.api\transitionFlow.mvc\wwwroot\js\auth.js

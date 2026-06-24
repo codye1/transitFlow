@@ -15,8 +15,8 @@ namespace transitFlow.Controllers
         private readonly UserManager<AppUser> _userManager;
         private readonly SignInManager<AppUser> _signInManager;
         private readonly ITokenService _tokenService;
-        private readonly IRefreshTokenRepository _tokenRepository; 
-                                                                                                            
+        private readonly IRefreshTokenRepository _tokenRepository;
+
         public AuthController(
             UserManager<AppUser> userManager,
             SignInManager<AppUser> signInManager,
@@ -40,10 +40,18 @@ namespace transitFlow.Controllers
             };
 
             var result = await _userManager.CreateAsync(user, dto.Password);
-            if (!result.Succeeded) return BadRequest(result.Errors);
+            if (!result.Succeeded)
+            {
+                var errors = result.Errors.Select(e => new ApiErrorDto(e.Code, e.Description));
+                return BadRequest(errors);
+            }
 
             result = await _userManager.AddToRoleAsync(user, "user");
-            if (!result.Succeeded) return BadRequest(result.Errors);
+            if (!result.Succeeded)
+            {
+                var errors = result.Errors.Select(e => new ApiErrorDto(e.Code, e.Description));
+                return BadRequest(errors);
+            }
 
             return Ok("User registered!");
         }
@@ -52,10 +60,16 @@ namespace transitFlow.Controllers
         public async Task<IActionResult> Login(LoginRequestDto dto)
         {
             var user = await _userManager.FindByEmailAsync(dto.Email);
-            if (user == null) return Unauthorized("Invalid credentials");
+            if (user == null)
+            {
+                return Unauthorized(new List<ApiErrorDto> { new ApiErrorDto("InvalidCredentials", "Invalid email or password.") });
+            }
 
             var passwordValid = await _userManager.CheckPasswordAsync(user, dto.Password);
-            if (!passwordValid) return Unauthorized("Invalid credentials");
+            if (!passwordValid)
+            {
+                return Unauthorized(new List<ApiErrorDto> { new ApiErrorDto("InvalidCredentials", "Invalid email or password.") });
+            }
 
             var response = await IssueTokensAsync(user);
             return Ok(response);
@@ -66,12 +80,16 @@ namespace transitFlow.Controllers
         {
             var refreshTokenValue = Request.Cookies["refreshToken"];
             if (string.IsNullOrEmpty(refreshTokenValue))
-                return Unauthorized("No refresh token provided");
+            {
+                return Unauthorized(new List<ApiErrorDto> { new ApiErrorDto("MissingToken", "No refresh token provided.") });
+            }
 
             var existingToken = await _tokenRepository.GetByTokenAsync(refreshTokenValue);
 
             if (existingToken == null || !existingToken.IsActive)
-                return Unauthorized("Invalid or expired refresh token");
+            {
+                return Unauthorized(new List<ApiErrorDto> { new ApiErrorDto("InvalidToken", "Invalid or expired refresh token.") });
+            }
 
             existingToken.RevokedAt = DateTime.UtcNow;
             _tokenRepository.Update(existingToken);
@@ -116,7 +134,7 @@ namespace transitFlow.Controllers
             var refreshTokenValue = _tokenService.GenerateRefreshToken();
 
             var refreshToken = new RefreshToken
-            {                                                                                                               
+            {
                 UserId = user.Id,
                 Token = refreshTokenValue,
                 CreatedAt = DateTime.UtcNow,

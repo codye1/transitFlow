@@ -23,7 +23,16 @@ var logger = new LoggerConfiguration()
 builder.Logging.ClearProviders();
 builder.Logging.AddSerilog(logger);
 
-
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowMvcApp", policy =>
+    {
+        policy.WithOrigins("https://localhost:7035", "http://localhost:5190")
+              .AllowAnyHeader()
+              .AllowAnyMethod()
+              .AllowCredentials();
+    });
+});
 
 builder.Services.AddControllers()
     .AddJsonOptions(options=>
@@ -89,6 +98,8 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+
+app.UseCors("AllowMvcApp");
 
 app.UseAuthentication();
 app.UseAuthorization();
