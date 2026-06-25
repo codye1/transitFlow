@@ -28,7 +28,7 @@
     --space-7: 2.5rem;
     --space-8: 3rem;
     --sidebar-w: 20rem;
-    --map-min-h: 600px;
+    --map-min-h: 500px;
     --radius-sm: 0.25rem;
     --radius-md: 0.5rem;
     --radius-lg: 0.75rem;
@@ -81,4 +81,49 @@ header {
     font-size: 0.75rem;
     color: var(--color-muted);
     margin: var(--space-1) 0 0 0;
+}
+
+
+.modal-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.5);
+    z-index: 1000;
+    align-items: center;
+    justify-content: center;
+}
+
+    .modal-overlay.is-active {
+        display: flex;
+    }
+
+.modal-window {
+    position:relative;
+    background: #fff;
+    border-radius: 8px;
+    padding: 24px;
+    min-width: 400px;
+    max-width: 600px;
+    width: 100%;
+}
+
+.js-close-modal{
+    position:absolute;
+    top:15px;
+    right:15px;
+
+    border:none;
+    background-color:var(--color-bg);
+
+    display:flex;
+    justify-content:center;
+    align-items:center;
+
+    cursor:pointer;
+}
+
+.js-close-modal img{
+    width:25px;
+    height:25px;
 }

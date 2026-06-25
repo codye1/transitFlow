@@ -24,6 +24,15 @@
     <footer>
         
     </footer>
+    <div id="app-modal" class="modal-overlay">
+        <div class="modal-window">
+            <div class="modal-header">
+                <h2 id="modal-title"></h2>
+                <button class="js-close-modal" id="js-close-modal"><img src="~/images/icons/close.svg" alt="CloseIcon" /> </button>
+            </div>
+            <div id="modal-body-content"></div>
+        </div>
+    </div>
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>
     @await RenderSectionAsync("Scripts", required: false)

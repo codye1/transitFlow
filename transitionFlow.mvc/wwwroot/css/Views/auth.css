@@ -112,39 +112,3 @@
 .hidden {
     display: none !important;
 }
-
-.btn-primary {
-    position: relative;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-.spinner {
-    display: none;
-    width: 18px;
-    height: 18px;
-    border: 2px solid rgba(255, 255, 255, 0.3);
-    border-radius: 50%;
-    border-top-color: #ffffff;
-    animation: spin 0.8s linear infinite;
-}
-
-.btn-primary.loading .btn-text {
-    display: none;
-}
-
-.btn-primary.loading .spinner {
-    display: block;
-}
-
-.btn-primary:disabled {
-    opacity: 0.7;
-    cursor: not-allowed;
-}
-
-@keyframes spin {
-    to {
-        transform: rotate(360deg);
-    }
-}
