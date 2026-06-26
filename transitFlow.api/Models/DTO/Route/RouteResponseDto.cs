@@ -7,6 +7,7 @@
         public string Name { get; set; }
         public string Type { get; set; }
         public string Color { get; set; }
+        public int CreatedById { get; set; } 
         public List<int> Stops { get; set; } = new List<int>();
     }
 }

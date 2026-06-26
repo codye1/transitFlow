@@ -40,7 +40,8 @@ namespace transitFlow.api.Controllers
                 Name = s.Name,
                 Latitude = s.Latitude,
                 Longitude = s.Longitude,
-                CreatedAt = s.CreatedAt
+                CreatedAt = s.CreatedAt,
+                CreatedById = s.CreatedById
             }).ToList();
 
             return Ok(new

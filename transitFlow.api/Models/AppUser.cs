@@ -12,4 +12,6 @@ namespace transitFlow.api.Models
         public virtual ICollection<Vehicle> CreatedVehicles { get; set; } = new List<Vehicle>();
         public virtual ICollection<Route> CreatedRoutes { get; set; } = new List<Route>();
     }
+
+
 }

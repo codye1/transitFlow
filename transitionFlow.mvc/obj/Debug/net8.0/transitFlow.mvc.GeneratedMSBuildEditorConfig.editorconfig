@@ -24,6 +24,10 @@ build_property.EnableCodeStyleSeverity =
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcQXV0aFxBdXRoLmNzaHRtbA==
 build_metadata.AdditionalFiles.CssScope = 
 
+[D:/С\#/transitFlow.api/transitionFlow.mvc/Views/Home/Components/RouteSidebar/Default.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcSG9tZVxDb21wb25lbnRzXFJvdXRlU2lkZWJhclxEZWZhdWx0LmNzaHRtbA==
+build_metadata.AdditionalFiles.CssScope = 
+
 [D:/С\#/transitFlow.api/transitionFlow.mvc/Views/Home/Components/StopSidebar/Default.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcSG9tZVxDb21wb25lbnRzXFN0b3BTaWRlYmFyXERlZmF1bHQuY3NodG1s
 build_metadata.AdditionalFiles.CssScope = 

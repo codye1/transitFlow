@@ -1,0 +1,215 @@
+﻿/* Route Sidebar Layout */
+.sidebar {
+    background-color: var(--color-bg);
+    padding: var(--space-4);
+    border-radius: var(--radius-lg);
+    border: 1px solid var(--color-border);
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-4);
+}
+
+.sidebar-header {
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.sidebar-title {
+    font-size: 0.875rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--color-muted);
+    margin: 0;
+}
+
+/* Route List Styles */
+.route-list {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
+    max-height: var(--map-min-h);
+    overflow-y: auto;
+}
+
+.route-item {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3, 12px);
+    padding: var(--space-3, 12px);
+    background-color: var(--color-surface, #fff);
+    border: 1px solid var(--color-border, #e5e7eb);
+    border-radius: var(--radius-md, 6px);
+    cursor: pointer;
+    transition: background-color 0.2s ease, border-color 0.2s ease;
+    position: relative;
+}
+
+    .route-item:hover {
+        background-color: var(--color-surface-hover, #f9fafb);
+    }
+
+.route-color-indicator {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    flex-shrink: 0;
+}
+
+.route-info {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 0;
+}
+
+.route-meta {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2, 8px);
+}
+
+.route-number {
+    font-weight: 600;
+    font-size: 0.875rem;
+    color: var(--color-text);
+}
+
+/* Badge styling based on your shadcn badge example */
+.route-badge {
+    font-size: 0.75rem;
+    padding: 2px 6px;
+    border-radius: var(--radius-sm, 4px);
+    background-color: var(--color-border, #e5e7eb);
+    color: var(--color-text-muted, #4b5563);
+    font-weight: 500;
+}
+
+.route-name {
+    font-size: 0.75rem;
+    color: var(--color-muted, #6b7280);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.route-stops-count {
+    font-size: 0.75rem;
+    color: var(--color-muted, #6b7280);
+}
+
+/* Actions logic mirroring your hover styles */
+.route-actions {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    opacity: 0;
+    transition: opacity 0.2s ease;
+    flex-shrink: 0;
+}
+
+.route-item:hover .route-actions {
+    opacity: 1;
+}
+
+/* Modal Form Updates for Routes */
+.color-picker-group {
+    display: flex;
+    gap: 8px;
+    margin-top: 4px;
+}
+
+.color-dot {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    border: 2px solid transparent;
+    cursor: pointer;
+    transition: transform 0.15s ease;
+    padding: 0;
+}
+
+    .color-dot:hover {
+        transform: scale(1.1);
+    }
+
+    .color-dot.active {
+        border-color: var(--color-text, #000);
+        transform: scale(1.1);
+    }
+
+
+/* Sortable list view mock setup */
+.selected-stops-container {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    margin-top: 8px;
+    margin-bottom: 8px;
+}
+
+.sortable-stop-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background-color: var(--color-border, #f3f4f6);
+    border-radius: var(--radius-md, 6px);
+    padding: 6px 12px;
+    font-size: 0.875rem;
+}
+
+.drag-handle {
+    cursor: grab;
+    color: var(--color-muted, #9ca3af);
+    display: flex;
+    align-items: center;
+}
+
+    .drag-handle:active {
+        cursor: grabbing;
+    }
+
+.stops-bucket-selector {
+    max-height: 160px;
+    overflow-y: auto;
+    border: 1px solid var(--color-border, #e5e7eb);
+    border-radius: var(--radius-md, 6px);
+    margin-top: 4px;
+}
+
+.bucket-item-btn {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    gap: var(--space-2, 8px); 
+
+    text-align: left;
+    padding: var(--space-2);
+    font-size: 0.875rem;
+    background: none;
+    border: none;
+    border-bottom: 1px solid var(--color-border, #f3f4f6);
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+    .bucket-item-btn:hover {
+        background-color: var(--color-border, #f3f4f6);
+    }
+    .bucket-item-btn .icon {
+        width: 14px; 
+        height: 14px;
+        display: block;
+        flex-shrink: 0; 
+    }
+
+.bucket-empty-state {
+    text-align: center;
+    font-size: 0.75rem;
+    color: var(--color-muted, #6b7280);
+    padding: 12px 0;
+}

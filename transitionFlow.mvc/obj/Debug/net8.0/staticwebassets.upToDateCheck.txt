@@ -5,6 +5,7 @@ wwwroot\css\views\Home\components\StopSidebar\stop-sidebar.css
 wwwroot\css\views\Home\home.css
 wwwroot\favicon.ico
 wwwroot\images\icons\accept.svg
+wwwroot\images\icons\add.svg
 wwwroot\images\icons\close.svg
 wwwroot\images\icons\delete.svg
 wwwroot\images\icons\edit.svg
@@ -15,8 +16,12 @@ wwwroot\js\site.js
 wwwroot\js\views\Auth\auth.js
 wwwroot\js\views\Auth\authApi.js
 wwwroot\js\views\Auth\authValidator.js
-wwwroot\js\views\Home\components\RouteSidebar\route-sidebar.js
-wwwroot\js\views\Home\components\StopSidebar\stop-sidebar.js
+wwwroot\js\views\Home\components\RouteSidebar\routeSidebar.js
+wwwroot\js\views\Home\components\RouteSidebar\routeSidebarApi.js
+wwwroot\js\views\Home\components\RouteSidebar\routeSidebarValidator.js
+wwwroot\js\views\Home\components\StopSidebar\stopSidebar.js
+wwwroot\js\views\Home\components\StopSidebar\stopSidebarApi.js
+wwwroot\js\views\Home\components\StopSidebar\stopSidebarValidator.js
 wwwroot\js\views\Home\home.js
 wwwroot\lib\bootstrap\dist\css\bootstrap-grid.css
 wwwroot\lib\bootstrap\dist\css\bootstrap-grid.css.map

@@ -1,0 +1,266 @@
+﻿$(function () {
+    let debounceTimer = null;
+    let savedRouteState = null;
+
+    const api = window.RouteSidebarApi;
+    const validator = window.RouteSidebarValidator;
+
+    // Ініціалізуємо правила, якщо плагін валідації вже доступний
+    if (validator && typeof validator.initRouteCustomRules === "function") {
+        validator.initRouteCustomRules();
+    }
+
+    const getMap = () => window.TransitMapInstance;
+
+    $(document).on('click', '.btn-delete-route', function (e) {
+        e.stopPropagation();
+        const routeId = $(this).closest('.route-item').data('id');
+        if (!confirm('Видалити маршрут?')) return;
+
+        api.deleteRoute(routeId)
+            .done(() => {
+                window.location.reload();
+            })
+            .fail((xhr) => {
+                if (xhr.status === 401) {
+                    window.location.href = '/login';
+                    return;
+                }
+                if (xhr.status === 403) {
+                    alert('Немає прав для видалення цього маршрута');
+                    return;
+                }
+                alert('Помилка видалення маршрута');
+            });
+    });
+
+    $(document).on('click', '.route-item', function (e) {
+        console.log("Клік по route-item зафіксовано");
+        if ($(this).hasClass('is-editing') || $(e.target).closest('.route-actions').length) {
+            console.log("Клік проігноровано (редагування або кнопки дій)");
+            return;
+        }
+        const map = getMap();
+        const routeId = $(this).data('id');
+        console.log("Фокусування на маршруті ID:", routeId);
+        console.log(map);
+        if (map && routeId !== undefined) {
+            map.focusOnRoute(Number(routeId));
+        }
+    });
+
+    $(document).on('click', '#open-route-modal-btn', function () {
+        openAddRouteModal();
+    });
+
+    function openAddRouteModal() {
+        window.Modal.open('Новий маршрут', '#tpl-add-route', function ($form) {
+
+            // Безпечна перевірка плагіна валідації перед викликом
+            if (typeof $form.validate === "function") {
+                $form.validate({
+                    ...validator.routeFormRules,
+                    submitHandler: function (form, e) {
+                        e.preventDefault();
+                        submitRouteForm($form);
+                    }
+                });
+            } else {
+                $form.on('submit', function (e) {
+                    e.preventDefault();
+                    submitRouteForm($form);
+                });
+            }
+        });
+
+        const $modalBody = $('#modal-body-content');
+        const $submitBtn = $modalBody.find('#btn-submit-route');
+        const $selectedList = $modalBody.find('#selected-stops-list');
+        const $bucket = $modalBody.find('#available-stops-bucket');
+
+        if (savedRouteState) {
+            $modalBody.find('#route-number').val(savedRouteState.number);
+            $modalBody.find('#route-type').val(savedRouteState.type);
+            $modalBody.find('#route-name').val(savedRouteState.name);
+            $modalBody.find('#selected-route-color').val(savedRouteState.color);
+            $modalBody.find(`.color-dot[data-color="${savedRouteState.color}"]`).addClass('active').siblings().removeClass('active');
+
+            if (savedRouteState.stopIds && savedRouteState.stopIds.length > 0) {
+                savedRouteState.stopIds.forEach(id => {
+                    const $bucketItem = $bucket.find(`.bucket-item-btn[data-stop-id="${id}"]`);
+                    if ($bucketItem.length) {
+                        addStopToSelected($bucketItem);
+                    }
+                });
+            }
+        } else {
+            $modalBody.find('.color-dot').first().addClass('active');
+        }
+
+        function validateForm() {
+            const number = $modalBody.find('#route-number').val().trim();
+            const name = $modalBody.find('#route-name').val().trim();
+            const hasStops = $selectedList.find('.selected-stop-item').length >= 2;
+            $submitBtn.prop('disabled', !(number && name && hasStops));
+        }
+
+        validateForm();
+        $modalBody.on('input', '#route-number, #route-name', validateForm);
+
+        $modalBody.on('click', '.color-dot', function () {
+            const color = $(this).data('color');
+            $modalBody.find('#selected-route-color').val(color);
+            $(this).addClass('active').siblings().removeClass('active');
+        });
+
+        function addStopToSelected($btn) {
+            const stopId = $btn.data('stop-id');
+            const stopName = $btn.text().trim();
+
+            const $selectedItem = $(`
+                <div class="selected-stop-item" data-stop-id="${stopId}" style="display: flex; align-items: center; justify-content: space-between; padding: var(--space-2); background: var(--color-bg-subtle, #f8fafc); border: 1px solid var(--color-border); border-radius: var(--radius-sm); margin-bottom: 4px;">
+                    <span class="stop-order-index" style="font-weight: 600; font-size: 0.8rem; margin-right: 8px; color: var(--color-muted);"></span>
+                    <span class="stop-title-text" style="flex-grow: 1; font-size: 0.85rem;">${stopName}</span>
+                    <button type="button" class="btn-remove-selected-stop" style="background: transparent; border: none; color: #ef4444; cursor: pointer; font-size: 1rem; padding: 0 var(--space-2);">✕</button>
+                </div>
+            `);
+
+            $selectedList.append($selectedItem);
+            $btn.addClass('hidden');
+
+            updateOrderIndexes();
+            validateForm();
+        }
+
+        $modalBody.on('click', '.bucket-item-btn', function () {
+            addStopToSelected($(this));
+        });
+
+        $modalBody.on('click', '.btn-remove-selected-stop', function () {
+            const $item = $(this).closest('.selected-stop-item');
+            const stopId = $item.data('stop-id');
+            $bucket.find(`.bucket-item-btn[data-stop-id="${stopId}"]`).removeClass('hidden');
+            $item.remove();
+            updateOrderIndexes();
+            validateForm();
+        });
+
+        function updateOrderIndexes() {
+            $selectedList.find('.selected-stop-item').each(function (index) {
+                $(this).find('.stop-order-index').text(`${index + 1}.`);
+            });
+            const totalVisibleInBucket = $bucket.find('.bucket-item-btn:not(.hidden)').length;
+            if (totalVisibleInBucket === 0) {
+                $modalBody.find('#bucket-empty-msg').removeClass('hidden');
+            } else {
+                $modalBody.find('#bucket-empty-msg').addClass('hidden');
+            }
+        }
+
+        $modalBody.on('click', '#js-close-route-modal', function (e) {
+            e.preventDefault();
+            window.Modal.close();
+        });
+
+        $modalBody.on('click', '#btn-route-pick-map', function () {
+            const stopIds = [];
+            $selectedList.find('.selected-stop-item').each(function () {
+                stopIds.push(Number($(this).data('stop-id')));
+            });
+
+            savedRouteState = {
+                number: $modalBody.find('#route-number').val(),
+                type: $modalBody.find('#route-type').val(),
+                name: $modalBody.find('#route-name').val(),
+                color: $modalBody.find('#selected-route-color').val(),
+                stopIds: stopIds
+            };
+
+            const allStopsArray = [];
+            $bucket.find('.bucket-item-btn').each(function () {
+                allStopsArray.push({
+                    id: Number($(this).data('stop-id')),
+                    name: $(this).text().trim(),
+                    latitude: parseFloat($(this).data('lat')),
+                    longitude: parseFloat($(this).data('lon'))
+                });
+            });
+
+            window.Modal.close();
+
+            $('#banner-text').text('Оберіть наявні зупинки на карті по черзі. Після завершення натисніть "Підтвердити"');
+            $('#btn-banner-confirm').removeClass('hidden');
+            $('#map-selection-banner').removeClass('hidden');
+
+            setupBannerEvents();
+
+            const map = getMap();
+            if (map && typeof map.enableRouteStopsSelection === 'function') {
+                map.enableRouteStopsSelection(allStopsArray, savedRouteState.stopIds, function (updatedStopIds) {
+                    savedRouteState.stopIds = updatedStopIds;
+                    $('#banner-text').text(`Обрано зупинок для маршруту: ${updatedStopIds.length}`);
+                });
+            }
+        });
+    }
+
+    // Допоміжна функція відправки форми
+    function submitRouteForm($form) {
+        const stopIds = [];
+        $form.find('#selected-stops-list .selected-stop-item').each(function () {
+            stopIds.push($(this).data('stop-id'));
+        });
+
+        const routeData = {
+            number: $form.find('#route-number').val().trim(),
+            type: $form.find('#route-type').val(),
+            name: $form.find('#route-name').val().trim(),
+            color: $form.find('#selected-route-color').val(),
+            selectedStops: stopIds
+        };
+
+        const $submitBtn = $form.find('#btn-submit-route');
+        $submitBtn.prop('disabled', true).addClass('loading');
+
+        window.RouteSidebarApi.createRoute(routeData)
+            .done(() => {
+                savedRouteState = null;
+                window.location.reload();
+            })
+            .fail((xhr) => {
+                if (xhr.status === 401) {
+                    window.location.href = '/login';
+                    return;
+                }
+                alert('Помилка збереження маршруту');
+            })
+            .always(() => {
+                $submitBtn.prop('disabled', false).removeClass('loading');
+            });
+    }
+
+    function setupBannerEvents() {
+        $('#btn-banner-confirm').off('click');
+        $('#btn-banner-cancel').off('click');
+
+        $('#btn-banner-confirm').on('click', function () {
+            if (!savedRouteState) return;
+            $('#map-selection-banner').addClass('hidden');
+            const map = getMap();
+            if (map && typeof map.disableRouteStopsSelection === 'function') {
+                map.disableRouteStopsSelection();
+            }
+            openAddRouteModal();
+        });
+
+        $('#btn-banner-cancel').on('click', function () {
+            if (!savedRouteState) return;
+            $('#map-selection-banner').addClass('hidden');
+            const map = getMap();
+            if (map && typeof map.disableRouteStopsSelection === 'function') {
+                map.disableRouteStopsSelection();
+            }
+            openAddRouteModal();
+        });
+    }
+});

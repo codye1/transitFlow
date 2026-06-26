@@ -5,21 +5,22 @@
 
     const getMap = () => window.TransitMapInstance;
 
+    // Отримуємо наші модулі з глобального вікна
+    const Api = window.StopSidebarApi;
+    const Validator = window.StopSidebarValidator;
+
     // === 1. ВИДАЛЕННЯ ЗУПИНКИ ===
     $(document).on('click', '.btn-delete-stop', function (e) {
         e.stopPropagation();
-
         const stopId = $(this).closest('.stop-item').data('id');
 
         if (!confirm('Видалити зупинку?')) return;
 
-        $.ajax({
-            url: `/stops/${stopId}`,
-            type: 'DELETE',
-            success: () => {
+        Api.deleteStop(stopId)
+            .done(() => {
                 window.location.reload();
-            },
-            error: (xhr) => {
+            })
+            .fail((xhr) => {
                 if (xhr.status === 401) {
                     window.location.href = '/login';
                     return;
@@ -29,19 +30,15 @@
                     return;
                 }
                 alert('Помилка видалення зупинки');
-            }
-        });
+            });
     });
 
-    // === 2. ІНЛАЙН РЕДАГУВАННЯ НАЗВИ (ШВИДКЕ РЕДАГУВАННЯ) ===
-
+    // === 2. ІНЛАЙН РЕДАГУВАННЯ НАЗВИ ===
     $(document).on('click', '.btn-edit-stop', function (e) {
         e.stopPropagation();
         const $item = $(this).closest('.stop-item');
-
         const currentName = $item.find('.stop-name b').text().trim();
         $item.find('.edit-input').val(currentName);
-
         $item.addClass('is-editing');
     });
 
@@ -74,12 +71,8 @@
             longitude: parseFloat(lonRaw.replace(',', '.'))
         };
 
-        $.ajax({
-            url: `/stops/${stopId}`,
-            type: 'PUT',
-            contentType: 'application/json',
-            data: JSON.stringify(updateData),
-            success: () => {
+        Api.updateStop(stopId, updateData)
+            .done(() => {
                 $item.find('.stop-name b').text(newName);
                 $item.removeClass('is-editing');
 
@@ -87,18 +80,17 @@
                 if (map) {
                     map.updateStopPopup(stopId, newName);
                 }
-            },
-            error: (xhr) => {
+            })
+            .fail((xhr) => {
                 if (xhr.status === 401) {
                     window.location.href = '/login';
                     return;
                 }
                 alert('Помилка оновлення назви зупинки');
-            },
-            complete: () => {
+            })
+            .always(() => {
                 $btn.prop('disabled', false);
-            }
-        });
+            });
     });
 
     $(document).on('keydown', '.edit-input', function (e) {
@@ -110,7 +102,6 @@
             $(this).closest('.stop-item').find('.btn-edit-close').click();
         }
     });
-
 
     // === 3. КЛІК НА ЕЛЕМЕНТ СПИСКУ (ФОКУС КАРТИ) ===
     $(document).on('click', '.stop-item', function (e) {
@@ -132,35 +123,40 @@
         }
     });
 
-    // === 4. МОДАЛЬНЕ ВІКНО СТВОРЕННЯ НОВОЇ ЗУПИНКИ ===
+    // === 4. МОДАЛЬНЕ ВІКНО СТВОРЕННЯ ЗУПИНКИ ===
     function openAddStopModal() {
         window.Modal.open('Нова зупинка', '#tpl-add-stop', function ($form) {
-            const stopData = {
-                name: $form.find('#stop-name').val(),
-                type: $form.find('#stop-type').val(),
-                latitude: parseFloat($form.find('#stop-lat').val()),
-                longitude: parseFloat($form.find('#stop-lon').val())
-            };
 
-            const $submitBtn = $form.find('#btn-submit-stop');
-            $submitBtn.prop('disabled', true).addClass('loading');
+            $form.validate({
+                ...Validator.stopFormRules,
+                submitHandler: function (form, e) {
+                    e.preventDefault();
 
-            $.ajax({
-                url: '/stops',
-                type: 'POST',
-                contentType: 'application/json',
-                data: JSON.stringify(stopData),
-                success: () => {
-                    savedStopState = null;
-                    window.location.reload();
-                },
-                error: (xhr) => {
-                    if (xhr.status === 401) {
-                        window.location.href = '/login';
-                        return;
-                    }
-                    alert('Помилка збереження зупинки');
-                    $submitBtn.prop('disabled', false).removeClass('loading');
+                    const stopData = {
+                        name: $form.find('#stop-name').val(),
+                        type: $form.find('#stop-type').val(),
+                        latitude: parseFloat($form.find('#stop-lat').val()),
+                        longitude: parseFloat($form.find('#stop-lon').val())
+                    };
+
+                    const $submitBtn = $form.find('#btn-submit-stop');
+                    $submitBtn.prop('disabled', true).addClass('loading');
+
+                    Api.createStop(stopData)
+                        .done(() => {
+                            savedStopState = null;
+                            window.location.reload();
+                        })
+                        .fail((xhr) => {
+                            if (xhr.status === 401) {
+                                window.location.href = '/login';
+                                return;
+                            }
+                            alert('Помилка збереження зупинки');
+                        })
+                        .always(() => {
+                            $submitBtn.prop('disabled', false).removeClass('loading');
+                        });
                 }
             });
         });
@@ -263,8 +259,8 @@
             };
 
             window.Modal.close();
-
             temporaryCoords = null;
+
             $('#banner-text').text('Натисніть на карту, щоб обрати координати зупинки');
             $('#btn-banner-confirm').addClass('hidden');
             $('#map-selection-banner').removeClass('hidden');
@@ -280,9 +276,11 @@
         });
     }
 
-    // === 5. ІВЕНТИ БАНЕРА (ВИБІР КООРДИНАТ НА КАРТІ) ===
+    // === 5. ІВЕНТИ БАНЕРА ===
     $('#btn-banner-confirm').on('click', function () {
-        if (temporaryCoords && savedStopState) {
+        if (!savedStopState) return;
+
+        if (temporaryCoords) {
             savedStopState.latitude = temporaryCoords.lat;
             savedStopState.longitude = temporaryCoords.lon;
         }
@@ -295,6 +293,8 @@
     });
 
     $('#btn-banner-cancel').on('click', function () {
+        if (!savedStopState) return;
+
         $('#map-selection-banner').addClass('hidden');
 
         const map = getMap();

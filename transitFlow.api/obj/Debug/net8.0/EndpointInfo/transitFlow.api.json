@@ -658,6 +658,10 @@
             "type": "string",
             "nullable": true
           },
+          "createdById": {
+            "type": "integer",
+            "format": "int32"
+          },
           "stops": {
             "type": "array",
             "items": {
@@ -710,6 +714,10 @@
           "longitude": {
             "type": "number",
             "format": "double"
+          },
+          "createdById": {
+            "type": "integer",
+            "format": "int32"
           },
           "createdAt": {
             "type": "string",

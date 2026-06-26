@@ -1,9 +1,9 @@
 using Microsoft.AspNetCore.Mvc;
-using System.Collections.Generic;
-using System.Net.Http;
+using System.Security.Claims;
 using System.Text.Json;
-using System.Threading.Tasks;
 using TransitFlow.mvc.Models;
+using System.IdentityModel.Tokens.Jwt;
+using TransitFlow.mvc.Models.DTO;
 
 public class HomeController : Controller
 {
@@ -22,7 +22,7 @@ public class HomeController : Controller
         };
 
         var stopsTask = _httpClient.GetAsync("stops?take=100");
-        var routesTask = _httpClient.GetAsync("routes?take=100"); 
+        var routesTask = _httpClient.GetAsync("routes?take=100");
 
         await Task.WhenAll(stopsTask, routesTask);
 
@@ -33,7 +33,7 @@ public class HomeController : Controller
         if (stopsResponse.IsSuccessStatusCode)
         {
             var json = await stopsResponse.Content.ReadAsStringAsync();
-            var result = JsonSerializer.Deserialize<StopsPagedResponse>(json, jsonOptions);
+            var result = JsonSerializer.Deserialize<PagedResponseDto<StopModel>>(json, jsonOptions);
             stops = result?.Data ?? new();
         }
 
@@ -41,7 +41,7 @@ public class HomeController : Controller
         if (routesResponse.IsSuccessStatusCode)
         {
             var json = await routesResponse.Content.ReadAsStringAsync();
-            var result = JsonSerializer.Deserialize<RoutesPagedResponse>(json, jsonOptions);
+            var result = JsonSerializer.Deserialize<PagedResponseDto<RouteModel>>(json, jsonOptions);
             routes = result?.Data ?? new();
         }
 
@@ -49,21 +49,53 @@ public class HomeController : Controller
         {
             Stops = stops,
             Routes = routes,
-            Vehicles = new List<VehicleModel>() 
+            Vehicles = new List<VehicleModel>(),
+            User = GetUser()
         };
 
         return View(model);
     }
-}
 
-public class StopsPagedResponse
-{
-    public List<StopModel> Data { get; set; } = new();
-    public bool HasMore { get; set; }
-}
+    private HomeUserModel? GetUser()
+    {
+        var accessToken = Request.Cookies["accessToken"];
+        if (string.IsNullOrEmpty(accessToken)) return null;
 
-public class RoutesPagedResponse
-{
-    public List<RouteModel> Data { get; set; } = new();
-    public bool HasMore { get; set; }
+        try
+        {
+            var handler = new JwtSecurityTokenHandler();
+            if (!handler.CanReadToken(accessToken)) return null;
+
+            var jwtToken = handler.ReadJwtToken(accessToken);
+            var userIdClaim = jwtToken.Claims.FirstOrDefault(c => c.Type == "sub" || c.Type == ClaimTypes.NameIdentifier)?.Value;
+
+            if (string.IsNullOrEmpty(userIdClaim) || !int.TryParse(userIdClaim, out int parsedId))
+            {
+                return null;
+            }
+
+            var roleClaims = jwtToken.Claims
+                .Where(c => c.Type == "role" || c.Type == ClaimTypes.Role)
+                .Select(c => c.Value);
+
+            var userRoles = new List<AppRole>();
+            foreach (var roleStr in roleClaims)
+            {
+                if (Enum.TryParse<AppRole>(roleStr, true, out var parsedRole))
+                {
+                    userRoles.Add(parsedRole);
+                }
+            }
+
+            return new HomeUserModel
+            {
+                Id = parsedId,
+                Roles = userRoles
+            };
+        }
+        catch
+        {
+            return null;
+        }
+    }
 }
