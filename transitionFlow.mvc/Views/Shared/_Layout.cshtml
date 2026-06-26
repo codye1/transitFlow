@@ -1,4 +1,6 @@
-﻿<!DOCTYPE html>
+﻿@inject TransitFlow.mvc.Services.IComponentAssetManager AssetManager
+
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="utf-8" />
@@ -6,6 +8,12 @@
     <title>@ViewData["Title"] - transitionFlow.mvc</title>
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/TransitFlow.mvc.styles.css" />
+
+    @foreach (var style in AssetManager.GetStyles())
+    {
+        <link rel="stylesheet" href="@style" />
+    }
+
     @await RenderSectionAsync("Styles", required: false)
 </head>
 <body>
@@ -24,8 +32,23 @@
     <footer>
         
     </footer>
+    <div id="app-modal" class="modal-overlay">
+        <div class="modal-window">
+            <div class="modal-header">
+                <h2 id="modal-title"></h2>
+                <button class="js-close-modal" id="js-close-modal"><img src="~/images/icons/close.svg" alt="CloseIcon" /> </button>
+            </div>
+            <div id="modal-body-content"></div>
+        </div>
+    </div>
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>
+
+    @foreach (var script in AssetManager.GetScripts())
+    {
+        <script src="@script"></script>
+    }
+
     @await RenderSectionAsync("Scripts", required: false)
 </body>
 </html>

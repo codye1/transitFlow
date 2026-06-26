@@ -3,7 +3,7 @@
 }
 
 @section Styles {
-    <link rel="stylesheet" href="~/css/auth.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/Views/auth.css" asp-append-version="true" />
 }
 
 <div class="auth-wrapper">
@@ -24,14 +24,14 @@
                 <input class="form-control" type="password" id="loginPassword" name="password" required placeholder="••••••••" />
             </div>
 
-            <button class="btn-primary" type="submit">
+            <button class="btn-primary auth-btn" type="submit">
                 <span class="btn-text">Увійти</span>
                 <span class="spinner"></span>
             </button>
         </form>
 
         <p class="auth-footer-text">
-            Немає облікового запису?
+            Немає облікового запису?    
             <span class="auth-link toggle-auth-panels">Зареєструватися</span>
         </p>
     </div>
@@ -53,7 +53,7 @@
                 <input class="form-control" type="password" id="registerPassword" name="password" required placeholder="••••••••" />
             </div>
 
-            <button class="btn-primary" type="submit">
+            <button class="btn-primary auth-btn" type="submit">
                 <span class="btn-text">Створити акаунт</span>
                 <span class="spinner"></span>
             </button>
@@ -68,5 +68,5 @@
 
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />
-    <script src="~/js/auth/auth.js" asp-append-version="true" type="module"></script>
+    <script src="~/js/Views/Auth/auth.js" asp-append-version="true" type="module"></script>
 }

@@ -1,4 +1,4 @@
-﻿@model TransitFlow.mvc.Models.TransitViewModel
+﻿@model TransitFlow.mvc.Models.HomeViewModel
 
 @{
     ViewData["Title"] = "TransitSim - Головна";
@@ -6,44 +6,25 @@
 
 @section Styles {
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-    <link rel="stylesheet" href="~/css/home.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/views/Home/home.css" asp-append-version="true" />
 }
 
 <div class="main-layout">
-    <div class="stats-container">
-        <div class="stat-badge">Маршрути: <b>@Model.Routes.Count</b></div>
-        <div class="stat-badge">Зупинки: <b>@Model.Stops.Count</b></div>
-        <div class="stat-badge">Транспорт: <b>@Model.Vehicles.Count</b></div>
-    </div>
-    <aside class="sidebar">
-        <h3 class="sidebar-title">Список зупинок</h3>
-        <button id="check-auth">Test auth</button>
-        <p id="authenticated" style="display:none">Authenticated</p>
-        <button id="check-logout">Check logout</button>
-        <div class="stop-list">
-            @foreach (var stop in Model.Stops)
-            {
-                <div class="stop-item">
-                    <span>📍</span>
-                    <div class="stop-name"><b>@stop.Name</b></div>
-                </div>
-            }
-        </div>
-    </aside>
-
-    <section class="map-container">
-        <div id="transport-map"></div>
-    </section>
+    <partial name="Partials/_StatsWidget" model="Model" />
+    @await Component.InvokeAsync("StopSidebar", Model.Stops)
+    @* @await Component.InvokeAsync("RouteSidebar", new { routes = Model.Routes, stops = Model.Stops }) *@
+    <partial name="Partials/_TransitMap" />
 </div>
 
 @section Scripts {
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script>
         window.TransitData = {
-            routes: @Html.Raw(ViewBag.RoutesJson),
-            stops: @Html.Raw(ViewBag.StopsJson),
-            vehicles: @Html.Raw(ViewBag.VehiclesJson)
+            stops: @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.Stops, new System.Text.Json.JsonSerializerOptions { PropertyNamingPolicy = System.Text.Json.JsonNamingPolicy.CamelCase })),
+            routes: @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.Routes, new System.Text.Json.JsonSerializerOptions { PropertyNamingPolicy = System.Text.Json.JsonNamingPolicy.CamelCase }))
         };
     </script>
-    <script src="~/js/helpers/transport-map.js" asp-append-version="true"></script>
+    <script src="~/js/helpers/ModalManager.js" asp-append-version="true"></script>
+
+    <script src="~/js/views/Home/home.js" asp-append-version="true" type="module"></script>
 }

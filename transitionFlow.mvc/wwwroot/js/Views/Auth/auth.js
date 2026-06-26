@@ -1,6 +1,6 @@
 ﻿import { login, register } from './authApi.js';
 import { initCustomRules, loginRules, registerRules } from './authValidator.js';
-import { handleApiErrors } from '../helpers/handleApiErrors.js';
+import { handleApiErrors } from '../../helpers/handleApiErrors.js';
 
 $(function () {
     initCustomRules();
@@ -22,8 +22,7 @@ $(function () {
             btn.prop('disabled', true).addClass('loading');
 
             login($('#loginEmail').val(), $('#loginPassword').val())
-                .done(function (response) {
-                    localStorage.setItem("accessToken", response.accessToken);
+                .done(function () {
                     window.location.href = '/';
                 })
                 .fail(function (xhr) {

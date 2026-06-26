@@ -16,7 +16,7 @@ namespace transitFlow.api.Services.TokenService
             _config = config;
         }
 
-        public DateTime AccessTokenExpiry => DateTime.UtcNow.AddMinutes(15);
+        public DateTime AccessTokenExpiry => DateTime.UtcNow.AddMilliseconds(30000);
 
         public string GenerateAccessToken(AppUser user, IList<string> roles)
         {

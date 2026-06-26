@@ -1,4 +1,5 @@
-﻿using transitFlow.api.Models;
+﻿using System.Threading.Tasks;
+using transitFlow.api.Models;
 using StopEntity = transitFlow.api.Models.Stop;
 
 namespace transitFlow.api.Repositories
@@ -12,5 +13,6 @@ namespace transitFlow.api.Repositories
         Task<bool> DeleteAsync(StopEntity stop);
         Task<IEnumerable<StopEntity>> GetStopsCursorAsync(int? afterId, int take, int? routeId = null);
         Task<bool> AreStopsValidAsync(List<int> stopIds);
+        Task<bool> UpdateAsync(Stop stop);
     }
 }

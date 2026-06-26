@@ -104,5 +104,30 @@ namespace transitFlow.api.Controllers
 
             return NoContent();
         }
+
+        [Authorize]
+        [HttpPut("{id}")]
+        public async Task<IActionResult> UpdateStop(int id, [FromBody] StopUpdateDto dto)
+        {
+            var stop = await _stopRepository.GetByIdAsync(id);
+            if (stop == null)
+                return NotFound($"Stop with ID {id} not found.");
+
+            var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (string.IsNullOrEmpty(userIdClaim) || !int.TryParse(userIdClaim, out int userId))
+                return Unauthorized("User ID not found in token.");
+
+            bool isAdminOrModerator = User.IsInRole("admin") || User.IsInRole("moderator");
+            if (!isAdminOrModerator && stop.CreatedById != userId)
+                return Forbid();
+
+            stop.Name = dto.Name;
+            stop.Latitude = dto.Latitude;
+            stop.Longitude = dto.Longitude;
+
+            await _stopRepository.UpdateAsync(stop);
+
+            return NoContent();
+        }
     }
 }

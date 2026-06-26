@@ -193,6 +193,27 @@
     "ReturnTypes": []
   },
   {
+    "ContainingType": "transitFlow.api.Controllers.StopsController",
+    "Method": "UpdateStop",
+    "RelativePath": "stops/{id}",
+    "HttpMethod": "PUT",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "id",
+        "Type": "System.Int32",
+        "IsRequired": true
+      },
+      {
+        "Name": "dto",
+        "Type": "transitFlow.api.Models.DTO.Stop.StopUpdateDto",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
     "ContainingType": "transitFlow.api.Controllers.VehiclesController",
     "Method": "GetVehicles",
     "RelativePath": "vehicles",

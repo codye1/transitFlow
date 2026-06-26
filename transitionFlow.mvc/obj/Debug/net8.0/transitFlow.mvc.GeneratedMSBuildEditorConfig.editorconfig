@@ -24,12 +24,24 @@ build_property.EnableCodeStyleSeverity =
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcQXV0aFxBdXRoLmNzaHRtbA==
 build_metadata.AdditionalFiles.CssScope = 
 
+[D:/С\#/transitFlow.api/transitionFlow.mvc/Views/Home/Components/StopSidebar/Default.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcSG9tZVxDb21wb25lbnRzXFN0b3BTaWRlYmFyXERlZmF1bHQuY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
 [D:/С\#/transitFlow.api/transitionFlow.mvc/Views/Home/Index.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcSG9tZVxJbmRleC5jc2h0bWw=
 build_metadata.AdditionalFiles.CssScope = 
 
 [D:/С\#/transitFlow.api/transitionFlow.mvc/Views/Shared/Error.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcU2hhcmVkXEVycm9yLmNzaHRtbA==
+build_metadata.AdditionalFiles.CssScope = 
+
+[D:/С\#/transitFlow.api/transitionFlow.mvc/Views/Shared/Partials/_StatsWidget.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcU2hhcmVkXFBhcnRpYWxzXF9TdGF0c1dpZGdldC5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
+[D:/С\#/transitFlow.api/transitionFlow.mvc/Views/Shared/Partials/_TransitMap.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcU2hhcmVkXFBhcnRpYWxzXF9UcmFuc2l0TWFwLmNzaHRtbA==
 build_metadata.AdditionalFiles.CssScope = 
 
 [D:/С\#/transitFlow.api/transitionFlow.mvc/Views/Shared/_ValidationScriptsPartial.cshtml]
