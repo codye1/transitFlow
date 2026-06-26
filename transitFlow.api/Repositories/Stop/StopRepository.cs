@@ -15,7 +15,7 @@ namespace transitFlow.api.Repositories
 
         public IQueryable<StopEntity> GetQueryable()
         {
-            return _context.Stops.AsNoTracking(); 
+            return _context.Stops.AsNoTracking();
         }
 
         public async Task<IEnumerable<StopEntity>> GetAllAsync()
@@ -25,7 +25,7 @@ namespace transitFlow.api.Repositories
 
         public async Task<StopEntity?> GetByIdAsync(int id)
         {
-            return await _context.Stops.FindAsync(id);  
+            return await _context.Stops.FindAsync(id);
         }
 
         public async Task<StopEntity> CreateAsync(StopEntity stop)
@@ -33,6 +33,13 @@ namespace transitFlow.api.Repositories
             _context.Stops.Add(stop);
             await _context.SaveChangesAsync();
             return stop;
+        }
+
+        public async Task<bool> UpdateAsync(StopEntity stop)
+        {
+            _context.Stops.Update(stop);
+            await _context.SaveChangesAsync();
+            return true;
         }
 
         public async Task<bool> DeleteAsync(StopEntity stop)
@@ -58,7 +65,7 @@ namespace transitFlow.api.Repositories
             {
                 query = query.Where(s => s.RouteStops.Any(rs => rs.RouteId == routeId.Value));
             }
-                                                                                                        
+
             if (afterId.HasValue && afterId.Value > 0)
             {
                 query = query.Where(s => s.Id > afterId.Value);

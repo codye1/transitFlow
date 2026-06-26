@@ -6,113 +6,25 @@
 
 @section Styles {
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-    <link rel="stylesheet" href="~/css/Views/home.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/views/Home/home.css" asp-append-version="true" />
 }
 
 <div class="main-layout">
-    <div class="stats-container">
-        <div class="stat-badge">Маршрути: <b>@Model.Routes.Count</b></div>
-        <div class="stat-badge">Зупинки: <b>@Model.Stops.Count</b></div>
-        <div class="stat-badge">Транспорт: <b>@Model.Vehicles.Count</b></div>
-    </div>
-    <aside class="sidebar">
-        <div class="sidebar-header">
-            <h3 class="sidebar-title">Зупинки</h3>
-            <button class="btn-primary" id="open-modal-btn" >Додати зупинку</button>
-        </div>
-        <div class="stop-list">
-            @foreach (var stop in Model.Stops)
-            {
-                <div class="stop-item">
-                    <span>📍</span>
-                    <div class="stop-name"><b>@stop.Name</b></div>
-                    <button class="btn-delete-stop" data-id="@stop.Id" title="Видалити">✕</button>
-                </div>
-            }
-        </div>
-
-        <template id="tpl-add-stop">
-            <form id="form-add-stop" class="modal-form-layout">
-                <div class="form-group">
-                    <label class="form-label">Назва зупинки</label>
-                    <input type="text" name="name" id="stop-name" required placeholder="Центральний вокзал" class="form-input" />
-                </div>
-
-                <div class="form-group">
-                    <label class="form-label">Тип</label>
-                    <select name="type" id="stop-type" class="form-input">
-                        <option value="bus">Автобус</option>
-                        <option value="tram">Трамвай</option>
-                        <option value="trolleybus">Тролейбус</option>
-                        <option value="combined">Комбінована</option>
-                    </select>
-                </div>
-
-                <div class="form-group relative-container">
-                    <label class="form-label">Пошук місця</label>
-                    <div class="flex-search-group">
-                        <input type="text" id="address-search" placeholder="Почніть вводити назву місця..." class="form-input flex-1" autocomplete="off" />
-                        <button type="button" id="btn-search-trigger" class="btn-search-icon">
-                            <span class="search-icon">🔍</span>
-                            <span class="spinner-icon hidden">🔄</span>
-                        </button>
-                    </div>
-                    <div id="search-suggestions" class="suggestions-dropdown hidden"></div>
-                </div>
-
-                <div class="form-grid-2">
-                    <div class="form-group">
-                        <label class="form-label">Широта</label>
-                        <input type="number" step="any" name="latitude" id="stop-lat" required placeholder="50.4501" class="form-input" />
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">Довгота</label>
-                        <input type="number" step="any" name="longitude" id="stop-lon" required placeholder="30.5234" class="form-input" />
-                    </div>
-                </div>
-
-                <button type="button" id="btn-pick-on-map" class="btn-outline-map">
-                    📍 Обрати на карті
-                </button>
-
-                <div class="modal-footer">
-                    <button type="button" class="btn-primary" id="js-close-modal">
-                        <span class="btn-text">Cкасувати</span>
-                    </button>
-                    <button type="submit" id="btn-submit-stop" disabled class="btn-primary">
-                        <span class="btn-text">Створити зупинку</span>
-                        <span class="spinner"></span>
-                    </button>
-                </div>  
-            </form>
-        </template>
-    </aside>
-
-    <div class="map-container">
-
-
-        <div id="map-selection-banner" class="map-banner hidden">
-            <span class="banner-icon">📍</span>
-            <span id="banner-text">Натисніть на карту, щоб обрати координати зупинки</span>
-            <div class="banner-actions">
-                <button type="button" id="btn-banner-confirm" class="btn-banner-success hidden">Підтвердити</button>
-                <button type="button" id="btn-banner-cancel" class="btn-banner-link">Скасувати</button>
-            </div>
-        </div>
-        <div id="transit-map"></div>
-    </div>
-
-
+    <partial name="Partials/_StatsWidget" model="Model" />
+    @await Component.InvokeAsync("StopSidebar", Model.Stops)
+    @* @await Component.InvokeAsync("RouteSidebar", new { routes = Model.Routes, stops = Model.Stops }) *@
+    <partial name="Partials/_TransitMap" />
 </div>
 
 @section Scripts {
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script>
         window.TransitData = {
-            stops: @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.Stops, new System.Text.Json.JsonSerializerOptions { PropertyNamingPolicy = System.Text.Json.JsonNamingPolicy.CamelCase }))
+            stops: @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.Stops, new System.Text.Json.JsonSerializerOptions { PropertyNamingPolicy = System.Text.Json.JsonNamingPolicy.CamelCase })),
+            routes: @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.Routes, new System.Text.Json.JsonSerializerOptions { PropertyNamingPolicy = System.Text.Json.JsonNamingPolicy.CamelCase }))
         };
     </script>
-    <script src="~/js/Helpers/ModalManager.js" asp-append-version="true"></script>
+    <script src="~/js/helpers/ModalManager.js" asp-append-version="true"></script>
 
-    <script src="~/js/Views/Home/home.js" asp-append-version="true" type="module"></script>
+    <script src="~/js/views/Home/home.js" asp-append-version="true" type="module"></script>
 }

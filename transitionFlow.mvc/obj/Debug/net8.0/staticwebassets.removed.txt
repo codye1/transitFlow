@@ -1,0 +1,2 @@
+D:\С#\transitFlow.api\transitionFlow.mvc\wwwroot\css\views\Home\components\RouteSidebar\route-sidebar.css
+D:\С#\transitFlow.api\transitionFlow.mvc\wwwroot\js\views\Home\components\RouteSidebar\route-sidebar.js

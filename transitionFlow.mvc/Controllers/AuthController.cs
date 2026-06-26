@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using System.Net.Http.Json;
+using TransitFlow.mvc.Models.DTO;
 
 namespace TransitFlow.mvc.Controllers
 {
@@ -26,26 +27,27 @@ namespace TransitFlow.mvc.Controllers
 
             if (response.IsSuccessStatusCode)
             {
-                var result = await response.Content.ReadFromJsonAsync<TokenResponseDto>();
-
-                // Зберігаємо accessToken для MVC додатку
-                Response.Cookies.Append("accessToken", result.AccessToken, new CookieOptions
+                var result = await response.Content.ReadFromJsonAsync<AuthResponseDto>();
+                if (result != null)
                 {
-                    HttpOnly = true,
-                    Secure = true,
-                    SameSite = SameSiteMode.Strict
-                });
-
-                // ПРОСТО ПРОКИДАЄМО REFRESH COOKIE ВІД API КОРИСТУВАЧУ
-                if (response.Headers.TryGetValues("Set-Cookie", out var cookieHeaders))
-                {
-                    foreach (var cookie in cookieHeaders)
+                    Response.Cookies.Append("accessToken", result.AccessToken, new CookieOptions
                     {
-                        Response.Headers.Append("Set-Cookie", cookie);
-                    }
-                }
+                        HttpOnly = true,
+                        Secure = true,
+                        SameSite = SameSiteMode.Strict
+                    });
 
-                return Ok();
+                    // Forward cookies (including refresh token context generated from API backend) securely
+                    if (response.Headers.TryGetValues("Set-Cookie", out var cookieHeaders))
+                    {
+                        foreach (var cookie in cookieHeaders)
+                        {
+                            Response.Headers.Append("Set-Cookie", cookie);
+                        }
+                    }
+
+                    return Ok();
+                }
             }
 
             return BadRequest();

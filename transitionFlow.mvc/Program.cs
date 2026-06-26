@@ -1,3 +1,5 @@
+using TransitFlow.mvc.Services;
+
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddHttpContextAccessor();
@@ -9,6 +11,8 @@ builder.Services.AddHttpClient("TransitApi", client =>
     client.BaseAddress = new Uri("https://localhost:7094");
 })
 .AddHttpMessageHandler<AuthHeaderHandler>();
+
+builder.Services.AddScoped<IComponentAssetManager, ComponentAssetManager>();
 
 var app = builder.Build();
 

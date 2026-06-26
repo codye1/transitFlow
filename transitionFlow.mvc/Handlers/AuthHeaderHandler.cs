@@ -2,47 +2,79 @@
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using Microsoft.AspNetCore.Http;
+using TransitFlow.mvc.Models.DTO;
 
 public class AuthHeaderHandler : DelegatingHandler
 {
     private readonly IHttpContextAccessor _httpContextAccessor;
     private readonly IHttpClientFactory _httpClientFactory;
 
-    public AuthHeaderHandler(IHttpContextAccessor httpContextAccessor, IHttpClientFactory httpClientFactory)
+    private static readonly SemaphoreSlim _semaphore = new SemaphoreSlim(1, 1);
+
+    public AuthHeaderHandler(IHttpContextAccessor httpContextAccessor, IHttpClientFactory factory)
     {
         _httpContextAccessor = httpContextAccessor;
-        _httpClientFactory = httpClientFactory;
+        _httpClientFactory = factory;
     }
 
     protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
     {
         var context = _httpContextAccessor.HttpContext;
-        string? accessToken = context?.Request.Cookies["accessToken"];
+        string? currentToken = context?.Request.Cookies["accessToken"];
 
-        if (!string.IsNullOrEmpty(accessToken))
+        if (!string.IsNullOrEmpty(currentToken))
         {
-            request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
+            request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", currentToken);
+        }
+
+        MemoryStream? backupStream = null;
+        if (request.Content != null)
+        {
+            backupStream = new MemoryStream();
+            await request.Content.CopyToAsync(backupStream, cancellationToken);
+            backupStream.Position = 0;
+
+            request.Content = CreateStreamContent(backupStream, request.Content.Headers);
         }
 
         var response = await base.SendAsync(request, cancellationToken);
-
         var requestUrl = request.RequestUri?.AbsolutePath ?? "";
+
         if (response.StatusCode == HttpStatusCode.Unauthorized
             && !requestUrl.Contains("/auth/login")
             && !requestUrl.Contains("/auth/refresh"))
         {
-            var (isRefreshed, newAccessToken) = await TryRefreshTokenAsync(context);
+            await _semaphore.WaitAsync(cancellationToken);
+            try
+            {
+                string? latestToken = _httpContextAccessor.HttpContext?.Request.Cookies["accessToken"];
 
-            if (isRefreshed && newAccessToken != null)
-            {
-                var newRequest = CloneRequest(request);
-                newRequest.Headers.Authorization = new AuthenticationHeaderValue("Bearer", newAccessToken);
-                return await base.SendAsync(newRequest, cancellationToken);
+                if (!string.IsNullOrEmpty(latestToken) && latestToken != currentToken)
+                {
+                    var shortCircuitRequest = CloneRequest(request, backupStream);
+                    shortCircuitRequest.Headers.Authorization = new AuthenticationHeaderValue("Bearer", latestToken);
+                    return await base.SendAsync(shortCircuitRequest, cancellationToken);
+                }
+
+                var (isRefreshed, newAccessToken) = await TryRefreshTokenAsync(context);
+
+                if (isRefreshed && !string.IsNullOrEmpty(newAccessToken))
+                {
+                    var retriedRequest = CloneRequest(request, backupStream);
+                    retriedRequest.Headers.Authorization = new AuthenticationHeaderValue("Bearer", newAccessToken);
+                    return await base.SendAsync(retriedRequest, cancellationToken);
+                }
+                else
+                {
+                    context?.Response.Cookies.Delete("accessToken");
+                    context?.Response.Cookies.Delete("refreshToken");
+
+                    return response;
+                }
             }
-            else
+            finally
             {
-                context?.Response.Cookies.Delete("accessToken");
-                context?.Response.Redirect("/login");
+                _semaphore.Release();
             }
         }
 
@@ -62,14 +94,13 @@ public class AuthHeaderHandler : DelegatingHandler
             client.BaseAddress = new Uri("https://localhost:7094");
 
             var refreshRequest = new HttpRequestMessage(HttpMethod.Post, "/auth/refresh");
-            // Передаємо куку (браузер надіслав її вже розкодованою, тому тут все буде ок)
             refreshRequest.Headers.Add("Cookie", $"refreshToken={refreshToken}");
 
             var response = await client.SendAsync(refreshRequest);
 
             if (response.IsSuccessStatusCode)
             {
-                var data = await response.Content.ReadFromJsonAsync<TokenResponseDto>();
+                var data = await response.Content.ReadFromJsonAsync<AuthResponseDto>();
                 if (data != null && !string.IsNullOrEmpty(data.AccessToken))
                 {
                     context.Response.Cookies.Append("accessToken", data.AccessToken, new CookieOptions
@@ -99,12 +130,10 @@ public class AuthHeaderHandler : DelegatingHandler
         return (false, null);
     }
 
-    private HttpRequestMessage CloneRequest(HttpRequestMessage req)
+    private HttpRequestMessage CloneRequest(HttpRequestMessage req, MemoryStream? backupStream)
     {
-        var clone = new HttpRequestMessage(req.Method, req.RequestUri)
-        {
-            Content = req.Content
-        };
+        var clone = new HttpRequestMessage(req.Method, req.RequestUri);
+
         foreach (var header in req.Headers)
         {
             clone.Headers.TryAddWithoutValidation(header.Key, header.Value);
@@ -113,11 +142,23 @@ public class AuthHeaderHandler : DelegatingHandler
         {
             clone.Options.Set(new HttpRequestOptionsKey<object?>(prop.Key.ToString()), prop.Value);
         }
+
+        if (backupStream != null)
+        {
+            backupStream.Position = 0; 
+            clone.Content = CreateStreamContent(backupStream, req.Content!.Headers);
+        }
+
         return clone;
     }
-}
 
-public class TokenResponseDto
-{
-    public string AccessToken { get; set; } = string.Empty;
+    private StreamContent CreateStreamContent(MemoryStream stream, HttpContentHeaders originalHeaders)
+    {
+        var content = new StreamContent(stream);
+        foreach (var header in originalHeaders)
+        {
+            content.Headers.TryAddWithoutValidation(header.Key, header.Value);
+        }
+        return content;
+    }
 }

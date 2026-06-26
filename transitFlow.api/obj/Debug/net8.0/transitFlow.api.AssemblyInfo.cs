@@ -15,7 +15,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("transitFlow.api")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+cc4c77b08f86e009ae102b154af21274cb9a9a2e")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+8b9a35ba60a161d8629914b0cffccd9cdbe9d368")]
 [assembly: System.Reflection.AssemblyProductAttribute("transitFlow.api")]
 [assembly: System.Reflection.AssemblyTitleAttribute("transitFlow.api")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

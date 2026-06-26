@@ -6,8 +6,9 @@
         this.map = null;
         this.stopColorMap = {};
         this._mapClickHandler = null;
-        this.pendingMarker = null; 
-
+        this.pendingMarker = null;
+        this.markers = {};
+        this.routeLines = {}; 
         this.init();
     }
 
@@ -45,22 +46,94 @@
         if (!this.map) return;
 
         this.mapRouteColors(routes);
+        this.markers = {};
 
         $.each(stops, (index, stop) => {
             const markerColor = this.stopColorMap[stop.id] || '#6B7280';
             const typeLabel = stop.type === 'combined' ? 'Комбінована' : 'Стандартна';
 
-            L.marker([stop.latitude, stop.longitude], {
+            const marker = L.marker([stop.latitude, stop.longitude], {
                 icon: this.createStopIcon(markerColor)
             })
                 .bindPopup(`
                 <div style="font-family: var(--font-body); font-size: 14px;">
-                    <div style="font-weight: bold; color: var(--color-text);">${stop.name}</div>
+                    <div class="popup-stop-name" style="font-weight: bold; color: var(--color-text);">${stop.name}</div>
                     <div style="color: var(--color-muted); font-size: 12px; margin-top:2px;">${typeLabel} зупинка</div>
                 </div>
             `)
                 .addTo(this.map);
+
+            this.markers[stop.id] = marker;
         });
+    }
+
+    async fetchOSRMRoute(coords) {
+        if (coords.length < 2) return null;
+
+        const coordString = coords.map(c => `${c[1]},${c[0]}`).join(';');
+        const url = `https://router.project-osrm.org/route/v1/driving/${coordString}?overview=full&geometries=geojson`;
+
+        try {
+            const response = await fetch(url);
+            if (!response.ok) throw new Error('OSRM network response was not ok');
+
+            const data = await response.json();
+            if (data.routes && data.routes.length > 0) {
+                return data.routes[0].geometry.coordinates.map(c => [c[1], c[0]]);
+            }
+        } catch (error) {
+            console.error("Failed to fetch road path from OSRM:", error);
+        }
+        return null; 
+    }
+
+    async renderRoutes(routes, stops) {
+        if (!this.map) return;
+
+        $.each(this.routeLines, (id, line) => {
+            this.map.removeLayer(line);
+        });
+        this.routeLines = {};
+
+        for (const route of routes) {
+            if (!route.stops || route.stops.length < 2) continue;
+
+            const stopCoords = [];
+            for (const stopId of route.stops) {
+                const targetStop = stops.find(s => s.id === stopId);
+                if (targetStop) {
+                    stopCoords.push([targetStop.latitude, targetStop.longitude]);
+                }
+            }
+
+            if (stopCoords.length < 2) continue;
+
+            let pathPoints = await this.fetchOSRMRoute(stopCoords);
+            if (!pathPoints) {
+                pathPoints = stopCoords;
+            }
+
+            const polyline = L.polyline(pathPoints, {
+                color: route.color || '#3B82F6',
+                weight: 4,
+                opacity: 0.85
+            }).addTo(this.map);
+
+            this.routeLines[route.id] = polyline;
+        }
+    }
+
+    updateStopPopup(id, newName) {
+        const marker = this.markers[id];
+        if (!marker) return;
+
+        const popup = marker.getPopup();
+        if (popup) {
+            const currentContent = popup.getContent();
+            const $html = $(`<div>${currentContent}</div>`);
+            $html.find('.popup-stop-name').text(newName);
+            marker.setPopupContent($html.html());
+        }
     }
 
     enableMapClickSelection(onMapClick) {
@@ -76,7 +149,7 @@
                 this.pendingMarker.setLatLng([fixedLat, fixedLon]);
             } else {
                 this.pendingMarker = L.marker([fixedLat, fixedLon], {
-                    icon: this.createStopIcon('#10B981') 
+                    icon: this.createStopIcon('#10B981')
                 }).addTo(this.map);
             }
 
@@ -102,6 +175,19 @@
             }
         }
     }
+
+    focusOnPoint(id, lat, lon, zoom = 16) {
+        if (!this.map) return;
+
+        this.map.flyTo([lat, lon], zoom, {
+            animate: true,
+            duration: 1.2
+        });
+
+        if (this.markers[id]) {
+            this.markers[id].openPopup();
+        }
+    }
 }
 
-export default TransitMap ;
+export default TransitMap;

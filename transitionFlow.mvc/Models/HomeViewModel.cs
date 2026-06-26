@@ -14,7 +14,7 @@
         public string Name { get; set; }
         public string Color { get; set; }
         public string Status { get; set; }
-        public string[] Stops { get; set; }
+        public int[] Stops { get; set; }
     }
 
     public class StopModel

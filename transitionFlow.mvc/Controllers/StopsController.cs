@@ -48,5 +48,30 @@ namespace TransitFlow.mvc.Controllers
 
             return BadRequest();
         }
+
+        [HttpPut("/stops/{id}")]
+        public async Task<IActionResult> UpdateStop(int id, [FromBody] object stopData)
+        {
+            var client = _httpClientFactory.CreateClient("TransitApi");
+
+            // Відправляємо PUT запит на Web API
+            var response = await client.PutAsJsonAsync($"/stops/{id}", stopData);
+
+            if (response.IsSuccessStatusCode)
+                return NoContent();
+
+            if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized)
+                return Unauthorized();
+
+            if (response.StatusCode == System.Net.HttpStatusCode.Forbidden)
+                return StatusCode(403);
+
+            if (response.StatusCode == System.Net.HttpStatusCode.NotFound)
+                return NotFound();
+
+            return BadRequest();
+        }
     }
+
+
 }
