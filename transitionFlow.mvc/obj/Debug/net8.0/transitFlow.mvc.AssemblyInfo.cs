@@ -14,7 +14,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("TransitFlow.mvc")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+9ea783b7695ad4649536ffaff626425eeb45c760")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+6648a94f7b3cd58dc46084da0b29316daac4643e")]
 [assembly: System.Reflection.AssemblyProductAttribute("TransitFlow.mvc")]
 [assembly: System.Reflection.AssemblyTitleAttribute("TransitFlow.mvc")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

@@ -1,0 +1,141 @@
+﻿@model TransitFlow.mvc.Models.VehicleSidebarViewModel
+@inject IComponentAssetManager AssetManager
+
+@{
+    AssetManager.RegisterStyle("/css/views/Home/components/VehicleSidebar/vehicle-sidebar.css");
+
+    AssetManager.RegisterScript("/lib/jquery-validation/dist/jquery.validate.min.js");
+
+    AssetManager.RegisterScript("/js/views/Home/components/VehicleSidebar/vehicleSidebarApi.js");
+    AssetManager.RegisterScript("/js/views/Home/components/VehicleSidebar/vehicleSidebarValidator.js");
+
+    AssetManager.RegisterScript("/js/views/Home/components/VehicleSidebar/vehicleSidebar.js");
+}
+
+<aside class="sidebar">
+    <div class="sidebar-header">
+        <h3 class="sidebar-title">Транспорт</h3>
+        <button class="btn-primary" id="open-vehicle-modal-btn">Додати</button>
+    </div>
+
+    <div class="vehicle-list">
+        @if (!Model.Vehicles.Any())
+        {
+            <p class="text-sm text-muted text-center py-4">Транспорту ще немає</p>
+        }
+
+        @foreach (var vehicle in Model.Vehicles)
+        {
+            var currentRoute = Model.Routes.FirstOrDefault(r => r.Id == vehicle.RouteId);
+
+            <div class="vehicle-item group" data-id="@vehicle.Id">
+                <div class="vehicle-main-info">
+                    <div class="vehicle-meta">
+                        <div class="status-indicator status-@vehicle.Status"></div>
+                        <span class="vehicle-plate">@vehicle.PlateNumber</span>
+                        <span class="vehicle-badge">@vehicle.TypeDescription</span>
+                    </div>
+                    <div class="vehicle-subtext">@vehicle.Model · @vehicle.Capacity пас.</div>
+
+                    @if (currentRoute != null)
+                    {
+                        <div class="vehicle-route-info">Маршрут №@currentRoute.Number</div>
+                    }
+                </div>
+
+                <div class="vehicle-inline-controls">
+                    <select class="form-input input-sm js-vehicle-route-select" data-id="@vehicle.Id">
+                        <option value="">— Без маршруту</option>
+                        @foreach (var route in Model.Routes)
+                        {
+                            <!option value="@route.Id" @(route.Id == vehicle.RouteId ? "selected" : "")>
+                            №@route.Number — @route.Name
+                            </!option>
+                        }
+                    </select>
+
+                    <select class="form-input input-sm js-vehicle-status-select" data-id="@vehicle.Id">
+                        @foreach (var status in Model.AvailableStatuses)
+                        {
+                            <!option value="@status.Key" @(status.Key == vehicle.Status ? "selected" : "")>
+                            @status.Value
+                            </!option>
+                        }
+                    </select>
+
+                    @if (Model.User != null && (Model.User.Roles.Contains(AppRole.Admin) || Model.User.Roles.Contains(AppRole.Moderator)))
+                    {
+                        <div class="vehicle-actions">
+                            <button class="icon-btn btn-delete-vehicle" title="Видалити">
+                                <img src="~/images/icons/delete.svg" alt="DeleteIcon" />
+                            </button>
+                        </div>
+                    }
+                </div>
+            </div>
+        }
+    </div>
+
+    <template id="tpl-add-vehicle">
+        <form id="form-add-vehicle" class="modal-form-layout">
+            <div class="form-grid-2">
+                <div class="form-group">
+                    <label class="form-label">Держномер</label>
+                    <input type="text" name="plateNumber" id="vehicle-plate" required placeholder="АА1234ВВ" class="form-input" />
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Тип</label>
+                    <select name="type" id="vehicle-type" class="form-input">
+                        <option value="bus">Автобус</option>
+                        <option value="tram">Трамвай</option>
+                        <option value="trolleybus">Тролейбус</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Модель</label>
+                <input type="text" name="model" id="vehicle-model" required placeholder="МАЗ-203" class="form-input" />
+            </div>
+
+            <div class="form-grid-2">
+                <div class="form-group">
+                    <label class="form-label">Місткість</label>
+                    <input type="number" name="capacity" id="vehicle-capacity" required placeholder="100" class="form-input" min="1" />
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Маршрут</label>
+                    <select name="routeId" id="vehicle-route" class="form-input">
+                        <option value="">Немає</option>
+                        @foreach (var route in Model.Routes)
+                        {
+                            <option value="@route.Id">№@route.Number — @route.Name</option>
+                        }
+                    </select>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Статус</label>
+                <select name="status" id="vehicle-status" class="form-input">
+                    @foreach (var status in Model.AvailableStatuses)
+                    {
+                        <option value="@status.Key">@status.Value</option>
+                    }
+                </select>
+            </div>
+
+            <div class="modal-footer">
+                <button type="button" class="btn-primary" id="js-close-vehicle-modal">
+                    <span class="btn-text">Скасувати</span>
+                </button>
+                <button type="submit" id="btn-submit-vehicle" class="btn-primary">
+                    <span class="btn-text">Створити</span>
+                    <span class="spinner"></span>
+                </button>
+            </div>
+        </form>
+    </template>
+</aside>
