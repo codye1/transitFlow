@@ -47,7 +47,8 @@ namespace transitFlow.api.Controllers
                 Stops = r.RouteStops
                     .OrderBy(rs => rs.SequenceNumber)
                     .Select(rs => rs.StopId)
-                    .ToList()
+                    .ToList(),
+                CreatedById= r.CreatedById
             }).ToList();
 
             return Ok(new

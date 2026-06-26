@@ -37,7 +37,6 @@ namespace TransitFlow.mvc.Controllers
                         SameSite = SameSiteMode.Strict
                     });
 
-                    // Forward cookies (including refresh token context generated from API backend) securely
                     if (response.Headers.TryGetValues("Set-Cookie", out var cookieHeaders))
                     {
                         foreach (var cookie in cookieHeaders)

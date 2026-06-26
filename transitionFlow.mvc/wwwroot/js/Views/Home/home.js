@@ -15,4 +15,16 @@ $(function () {
             window.TransitMapInstance.renderRoutes(window.TransitData.routes, window.TransitData.stops);
         }
     }
+
+    $('.tab-trigger').on('click', function () {
+        const targetTab = $(this).data('tab');
+
+        // Зміна активного стану кнопок
+        $('.tab-trigger').removeClass('active');
+        $(this).addClass('active');
+
+        // Відображення відповідної панелі сайдбару
+        $('.tab-panel').removeClass('active');
+        $(`#panel-${targetTab}`).addClass('active');
+    });
 });

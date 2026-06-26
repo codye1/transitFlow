@@ -32,3 +32,12 @@ D:\С#\transitFlow.api\transitionFlow.mvc\obj\Debug\net8.0\refint\transitFlow.mv
 D:\С#\transitFlow.api\transitionFlow.mvc\obj\Debug\net8.0\transitFlow.mvc.pdb
 D:\С#\transitFlow.api\transitionFlow.mvc\obj\Debug\net8.0\transitFlow.mvc.genruntimeconfig.cache
 D:\С#\transitFlow.api\transitionFlow.mvc\obj\Debug\net8.0\ref\transitFlow.mvc.dll
+D:\С#\transitFlow.api\transitionFlow.mvc\bin\Debug\net8.0\Microsoft.Bcl.Cryptography.dll
+D:\С#\transitFlow.api\transitionFlow.mvc\bin\Debug\net8.0\Microsoft.IdentityModel.Abstractions.dll
+D:\С#\transitFlow.api\transitionFlow.mvc\bin\Debug\net8.0\Microsoft.IdentityModel.JsonWebTokens.dll
+D:\С#\transitFlow.api\transitionFlow.mvc\bin\Debug\net8.0\Microsoft.IdentityModel.Logging.dll
+D:\С#\transitFlow.api\transitionFlow.mvc\bin\Debug\net8.0\Microsoft.IdentityModel.Tokens.dll
+D:\С#\transitFlow.api\transitionFlow.mvc\bin\Debug\net8.0\System.Formats.Asn1.dll
+D:\С#\transitFlow.api\transitionFlow.mvc\bin\Debug\net8.0\System.IdentityModel.Tokens.Jwt.dll
+D:\С#\transitFlow.api\transitionFlow.mvc\obj\Debug\net8.0\TransitFlow.mvc.csproj.AssemblyReference.cache
+D:\С#\transitFlow.api\transitionFlow.mvc\obj\Debug\net8.0\TransitF.1ED80AF9.Up2Date

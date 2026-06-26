@@ -11,8 +11,37 @@
 
 <div class="main-layout">
     <partial name="Partials/_StatsWidget" model="Model" />
-    @await Component.InvokeAsync("StopSidebar", Model.Stops)
-    @* @await Component.InvokeAsync("RouteSidebar", new { routes = Model.Routes, stops = Model.Stops }) *@
+
+    <div class="sidebar-container">
+        <div class="tabs-list">
+            <button class="tab-trigger active" data-tab="routes">
+                Маршрути
+            </button>
+            <button class="tab-trigger" data-tab="stops">
+                 Зупинки
+            </button>
+            <button class="tab-trigger" data-tab="vehicles">
+                 Транспорт
+            </button>
+        </div>
+
+        <div class="tabs-content">
+            <div id="panel-routes" class="tab-panel active">
+                @await Component.InvokeAsync("RouteSidebar", new { routes = Model.Routes, stops = Model.Stops, user=Model.User })
+            </div>
+
+            <div id="panel-stops" class="tab-panel">
+                @await Component.InvokeAsync("StopSidebar", new {stops = Model.Stops,user=Model.User})
+            </div>
+
+            <div id="panel-vehicles" class="tab-panel">
+                <div class="placeholder-content">
+                    <p>Панель керування транспортом в розробці...</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <partial name="Partials/_TransitMap" />
 </div>
 

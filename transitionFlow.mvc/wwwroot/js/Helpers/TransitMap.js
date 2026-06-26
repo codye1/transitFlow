@@ -9,6 +9,7 @@
         this.pendingMarker = null;
         this.markers = {};
         this.routeLines = {}; 
+        this.previewPolyline = null;
         this.init();
     }
 
@@ -97,7 +98,6 @@
 
         for (const route of routes) {
             if (!route.stops || route.stops.length < 2) continue;
-
             const stopCoords = [];
             for (const stopId of route.stops) {
                 const targetStop = stops.find(s => s.id === stopId);
@@ -175,6 +175,125 @@
             }
         }
     }
+    enableRouteStopsSelection(allStops, currentStopIds, onStopSelected) {
+        this.disableRouteStopsSelection();
+        this._allStops = allStops;
+        this._selectedStopIds = [...currentStopIds];
+
+        // Зберігаємо початкові іконки маркерів, щоб повернути їх назад потім
+        this._originalIcons = {};
+
+        this.updatePreviewRoute();
+
+        $.each(this.markers, (stopId, marker) => {
+            const numericId = Number(stopId);
+
+            if (marker.getPopup()) {
+                marker._savedPopup = marker.getPopup();
+                marker.unbindPopup();
+            }
+
+            // Зберігаємо оригінальну іконку маркера
+            this._originalIcons[numericId] = marker.options.icon;
+
+            // Якщо маркер вже був обраний до переходу на карту — підсвічуємо його відразу
+            if (this._selectedStopIds.includes(numericId)) {
+                marker.setIcon(this.createHighlightIcon('#10B981')); // зелений активний колір
+            }
+
+            marker._routeSelectHandler = async (e) => {
+                if (e && e.originalEvent) e.originalEvent.stopPropagation();
+
+                if (!this._selectedStopIds.includes(numericId)) {
+                    this._selectedStopIds.push(numericId);
+                    marker.setIcon(this.createHighlightIcon('#10B981')); // Підсвічуємо при виборі
+                } else {
+                    this._selectedStopIds = this._selectedStopIds.filter(id => id !== numericId);
+                    // Повертаємо дефолтну іконку
+                    marker.setIcon(this._originalIcons[numericId]);
+                }
+
+                await this.updatePreviewRoute();
+
+                if (typeof onStopSelected === 'function') {
+                    onStopSelected(this._selectedStopIds);
+                }
+            };
+
+            marker.on('click', marker._routeSelectHandler);
+        });
+    }
+
+    // Допоміжний метод для створення підсвіченої іконки (більший розмір + ефект пульсації/обводки)
+    createHighlightIcon(color) {
+        return L.divIcon({
+            className: '',
+            html: `<div style="width:20px;height:20px;background:${color};border:4px solid white;border-radius:50%;box-shadow:0 0 12px ${color}, 0 2px 6px rgba(0,0,0,0.4);transition: all 0.2s ease;"></div>`,
+            iconSize: [20, 20],
+            iconAnchor: [10, 10]
+        });
+    }
+
+    async updatePreviewRoute() {
+        if (this.previewPolyline) {
+            this.map.removeLayer(this.previewPolyline);
+            this.previewPolyline = null;
+        }
+
+        if (!this._selectedStopIds || this._selectedStopIds.length < 2) return;
+
+        const stopCoords = [];
+        for (const stopId of this._selectedStopIds) {
+            const targetStop = this._allStops.find(s => s.id === stopId || s.Id === stopId);
+            if (targetStop) {
+                stopCoords.push([targetStop.latitude || targetStop.Latitude, targetStop.longitude || targetStop.Longitude]);
+            }
+        }
+
+        if (stopCoords.length < 2) return;
+
+        let pathPoints = await this.fetchOSRMRoute(stopCoords);
+        if (!pathPoints) {
+            pathPoints = stopCoords;
+        }
+
+        this.previewPolyline = L.polyline(pathPoints, {
+            color: '#10B981', 
+            weight: 5,
+            opacity: 0.75,
+            dashArray: '10, 10' 
+        }).addTo(this.map);
+    }
+
+    disableRouteStopsSelection() {
+        $.each(this.markers, (stopId, marker) => {
+            const numericId = Number(stopId);
+
+            if (marker._routeSelectHandler) {
+                marker.off('click', marker._routeSelectHandler);
+                delete marker._routeSelectHandler;
+            }
+
+            if (marker._savedPopup) {
+                marker.bindPopup(marker._savedPopup);
+                delete marker._savedPopup;
+            }
+
+            // Відновлюємо початковий вигляд усіх маркерів
+            if (this._originalIcons && this._originalIcons[numericId]) {
+                marker.setIcon(this._originalIcons[numericId]);
+            }
+        });
+
+        if (this.previewPolyline) {
+            this.map.removeLayer(this.previewPolyline);
+            this.previewPolyline = null;
+        }
+
+        this._selectedStopIds = [];
+        this._allStops = [];
+        this._originalIcons = {};
+    }
 
     focusOnPoint(id, lat, lon, zoom = 16) {
         if (!this.map) return;
@@ -186,6 +305,23 @@
 
         if (this.markers[id]) {
             this.markers[id].openPopup();
+        }
+    }
+
+    focusOnRoute(routeId) {
+        if (!this.map) return;
+
+        const polyline = this.routeLines[routeId];
+        if (polyline) {
+            const bounds = polyline.getBounds();
+
+            this.map.flyToBounds(bounds, {
+                animate: true,
+                duration: 1.2,
+                padding: [50, 50] 
+            });
+        } else {
+            console.warn(`Route line with ID ${routeId} not found on the map.`);
         }
     }
 }
