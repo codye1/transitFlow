@@ -1,9 +1,7 @@
-wwwroot\css\site.css
 wwwroot\css\views\auth.css
 wwwroot\css\views\Home\components\RouteSidebar\route-sidebar.css
 wwwroot\css\views\Home\components\StopSidebar\stop-sidebar.css
 wwwroot\css\views\Home\components\VehicleSidebar\vehicle-sidebar.css
-wwwroot\css\views\Home\home.css
 wwwroot\favicon.ico
 wwwroot\images\icons\accept.svg
 wwwroot\images\icons\add.svg
@@ -20,10 +18,8 @@ wwwroot\js\views\Auth\authValidator.js
 wwwroot\js\views\Home\components\RouteSidebar\routeSidebar.js
 wwwroot\js\views\Home\components\RouteSidebar\routeSidebarApi.js
 wwwroot\js\views\Home\components\RouteSidebar\routeSidebarValidator.js
-wwwroot\js\views\Home\components\StopSidebar\stopSidebar.js
 wwwroot\js\views\Home\components\StopSidebar\stopSidebarApi.js
-wwwroot\js\views\Home\components\StopSidebar\stopSidebarValidator.js
-wwwroot\js\views\Home\components\VehicleSidebar\vehicleSidebar.js
+wwwroot\js\views\Home\components\VehicleSidebar\vehicleSidebarApi.js
 wwwroot\js\views\Home\components\VehicleSidebar\vehicleSidebarValidator.js
 wwwroot\js\views\Home\home.js
 wwwroot\lib\bootstrap\dist\css\bootstrap-grid.css
@@ -83,4 +79,8 @@ wwwroot\lib\jquery\dist\jquery.js
 wwwroot\lib\jquery\dist\jquery.min.js
 wwwroot\lib\jquery\dist\jquery.min.map
 wwwroot\lib\jquery\LICENSE.txt
-wwwroot\js\views\Home\components\VehicleSidebar\vehicleSidebarApi.js
+wwwroot\css\site.css
+wwwroot\css\views\Home\home.css
+wwwroot\js\views\Home\components\StopSidebar\stopSidebar.js
+wwwroot\js\views\Home\components\StopSidebar\stopSidebarValidator.js
+wwwroot\js\views\Home\components\VehicleSidebar\vehicleSidebar.js

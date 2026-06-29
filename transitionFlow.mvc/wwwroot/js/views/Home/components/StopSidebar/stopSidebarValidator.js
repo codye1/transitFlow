@@ -6,7 +6,8 @@
         stopFormRules: {
             rules: {
                 name: {
-                    required: true
+                    required: true,
+                    minlength: 3
                 },
                 latitude: {
                     required: true,
@@ -19,7 +20,8 @@
             },
             messages: {
                 name: {
-                    required: "Будь ласка, введіть назву зупинки."
+                    required: "Будь ласка, введіть назву зупинки.",
+                    minlength: "Назва повинна містити мінімум 3 символи." 
                 },
                 latitude: {
                     required: "Координата широти обов'язкова.",

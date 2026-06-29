@@ -5,6 +5,22 @@
     const Validator = window.VehicleSidebarValidator;
     const ModalManager = window.Modal;
 
+    const getMap = () => window.TransitMapInstance;
+
+    // Клік на елемент транспорту для фокусування на карті
+    $(document).on('click', '.vehicle-item', function (e) {
+        if ($(e.target).closest('.js-vehicle-route-select, .js-vehicle-status-select, .btn-delete-vehicle').length) {
+            return;
+        }
+
+        const map = getMap();
+        const vehicleId = $(this).data('id');
+        if (map && vehicleId !== undefined) {
+            map.focusOnVehicle(vehicleId);
+        }
+    });
+
+    // Видалення транспортного засобу
     $(document).on('click', '.btn-delete-vehicle', function (e) {
         e.stopPropagation();
         const $item = $(this).closest('.vehicle-item');
@@ -30,16 +46,31 @@
             });
     });
 
-    $(document).on('change', '.js-vehicle-route-select', function () {
+    // 1. Зміна маршруту автобуса через селект у списку
+    $(document).on('change', '.js-vehicle-route-select', function (e) {
+        e.preventDefault();
         const $select = $(this);
-        const vehicleId = $select.data('id');
-        const routeId = $select.val();
+        const vehicleId = Number($select.data('id'));
+        const routeId = $select.val() ? Number($select.val()) : null;
 
         $select.prop('disabled', true);
 
         Api.updateRoute(vehicleId, routeId)
             .done(() => {
-                window.location.reload();
+                if (window.TransitData && window.TransitData.vehicles) {
+                    const vehicle = window.TransitData.vehicles.find(v => v.id === vehicleId);
+                    if (vehicle) {
+                        vehicle.routeId = routeId;
+                    }
+
+                    if (window.TransitMapInstance && typeof window.TransitMapInstance.renderAndAnimateVehicles === 'function') {
+                        window.TransitMapInstance.renderAndAnimateVehicles(
+                            window.TransitData.vehicles,
+                            window.TransitData.routes,
+                            window.TransitData.stops
+                        );
+                    }
+                }
             })
             .fail((xhr) => {
                 if (xhr.status === 401) {
@@ -47,16 +78,17 @@
                     return;
                 }
                 alert('Помилка оновлення маршруту для транспорту');
-                window.location.reload();
             })
             .always(() => {
                 $select.prop('disabled', false);
             });
     });
 
-    $(document).on('change', '.js-vehicle-status-select', function () {
+    // 2. Зміна статусу автобуса через селект у списку
+    $(document).on('change', '.js-vehicle-status-select', function (e) {
+        e.preventDefault();
         const $select = $(this);
-        const vehicleId = $select.data('id');
+        const vehicleId = Number($select.data('id'));
         const nextStatus = $select.val();
 
         $select.prop('disabled', true);
@@ -65,6 +97,21 @@
             .done(() => {
                 const $indicator = $select.closest('.vehicle-item').find('.status-indicator');
                 $indicator.attr('class', `status-indicator status-${nextStatus}`);
+
+                if (window.TransitData && window.TransitData.vehicles) {
+                    const vehicle = window.TransitData.vehicles.find(v => v.id === vehicleId);
+                    if (vehicle) {
+                        vehicle.status = nextStatus;
+                    }
+
+                    if (window.TransitMapInstance && typeof window.TransitMapInstance.renderAndAnimateVehicles === 'function') {
+                        window.TransitMapInstance.renderAndAnimateVehicles(
+                            window.TransitData.vehicles,
+                            window.TransitData.routes,
+                            window.TransitData.stops
+                        );
+                    }
+                }
             })
             .fail((xhr) => {
                 if (xhr.status === 401) {
@@ -78,57 +125,65 @@
             });
     });
 
+    // Функція відкриття модального вікна додавання ТЗ
     function openAddVehicleModal() {
         if (!ModalManager) {
             console.error('Global Modal manager library initialization instances not found.');
             return;
         }
 
-        ModalManager.open('Новий транспортний засіб', '#tpl-add-vehicle', function ($form) {
-            const $submitBtn = $form.find('#btn-submit-vehicle');
+        ModalManager.open('Новий транспортний засіб', '#tpl-add-vehicle', {
+            ...Validator.vehicleFormRules,
+            showErrors: function (errorMap, errorList) {
+                this.defaultShowErrors();
 
-            $form.validate({
-                ...Validator.vehicleFormRules,
-                onkeyup: function () { this.checkForm() ? $submitBtn.prop('disabled', false) : $submitBtn.prop('disabled', true); },
-                onclick: function () { this.checkForm() ? $submitBtn.prop('disabled', false) : $submitBtn.prop('disabled', true); },
-                submitHandler: function (form, e) {
-                    e.preventDefault();
+                const $form = $(this.currentForm);
+                const $submitBtn = $form.find('#btn-submit-vehicle');
 
-                    const vehicleData = {
-                        plateNumber: $form.find('#vehicle-plate').val().trim(),
-                        type: $form.find('#vehicle-type').val(),
-                        model: $form.find('#vehicle-model').val().trim(),
-                        capacity: parseInt($form.find('#vehicle-capacity').val(), 10),
-                        routeId: $form.find('#vehicle-route').val() || null,
-                        status: $form.find('#vehicle-status').val()
-                    };
-
-                    $submitBtn.prop('disabled', true).addClass('loading');
-
-                    Api.createVehicle(vehicleData)
-                        .done(() => {
-                            ModalManager.close();
-                            window.location.reload();
-                        })
-                        .fail((xhr) => {
-                            if (xhr.status === 401) {
-                                window.location.href = '/login';
-                                return;
-                            }
-                            alert('Помилка збереження нового транспортного засобу');
-                        })
-                        .always(() => {
-                            $submitBtn.prop('disabled', false).removeClass('loading');
-                        });
+                if (this.numberOfInvalids() > 0) {
+                    $submitBtn.prop('disabled', true);
+                } else {
+                    $submitBtn.prop('disabled', false);
                 }
-            });
+            },
+            submitHandler: (form) => {
+                const $form = $(form);
 
-            $submitBtn.prop('disabled', !$form.valid());
+                const vehicleData = {
+                    plateNumber: $form.find('#vehicle-plate').val().trim(),
+                    type: $form.find('#vehicle-type').val(),
+                    model: $form.find('#vehicle-model').val().trim(),
+                    capacity: parseInt($form.find('#vehicle-capacity').val(), 10),
+                    routeId: $form.find('#vehicle-route').val() || null,
+                    status: $form.find('#vehicle-status').val()
+                };
 
-            $form.on('click', '#js-close-vehicle-modal', function (e) {
-                e.preventDefault();
-                ModalManager.close();
-            });
+                const $submitBtn = $form.find('#btn-submit-vehicle');
+                $submitBtn.prop('disabled', true).addClass('loading');
+
+                Api.createVehicle(vehicleData)
+                    .done(() => {
+                        ModalManager.close();
+                        window.location.reload();
+                    })
+                    .fail((xhr) => {
+                        if (xhr.status === 401) {
+                            window.location.href = '/login';
+                            return;
+                        }
+                        alert('Помилка збереження нового транспортного засобу');
+                    })
+                    .always(() => {
+                        $submitBtn.prop('disabled', false).removeClass('loading');
+                    });
+            }
+        });
+
+        const $modalBody = $('#modal-body-content');
+
+        $modalBody.on('click', '#js-close-vehicle-modal', function (e) {
+            e.preventDefault();
+            ModalManager.close();
         });
     }
 

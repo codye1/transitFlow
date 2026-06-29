@@ -18,7 +18,7 @@
         <button class="btn-primary" id="open-vehicle-modal-btn">Додати</button>
     </div>
 
-    <div class="vehicle-list">
+    <ul class="vehicle-list">
         @if (!Model.Vehicles.Any())
         {
             <p>Транспорту ще немає</p>
@@ -28,7 +28,7 @@
         {
             var currentRoute = Model.Routes.FirstOrDefault(r => r.Id == vehicle.RouteId);
 
-            <div class="vehicle-item group" data-id="@vehicle.Id">
+            <li class="vehicle-item group" data-id="@vehicle.Id">
                 <div class="vehicle-main-info">
                     <div class="vehicle-meta">
                         <div class="status-indicator status-@vehicle.Status"></div>
@@ -62,8 +62,7 @@
                             </!option>
                         }
                     </select>
-
-                    @if (Model.User != null && (Model.User.Roles.Contains(AppRole.Admin) || Model.User.Roles.Contains(AppRole.Moderator)))
+                    @if (Model.User != null && (vehicle.CreatedById == Model.User.Id || (Model.User.Roles.Contains(AppRole.Admin) || Model.User.Roles.Contains(AppRole.Moderator))))
                     {
                         <div class="vehicle-actions">
                             <button class="icon-btn btn-delete-vehicle" title="Видалити">
@@ -72,9 +71,9 @@
                         </div>
                     }
                 </div>
-            </div>
+            </li>
         }
-    </div>
+    </ul>
 
     <template id="tpl-add-vehicle">
         <form id="form-add-vehicle" class="modal-form-layout">

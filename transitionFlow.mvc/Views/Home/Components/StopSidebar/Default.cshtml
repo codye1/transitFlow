@@ -14,10 +14,10 @@
         <h3 class="sidebar-title">Зупинки</h3>
         <button class="btn-primary" id="open-modal-btn">Додати зупинку</button>
     </div>
-    <div class="stop-list">
+    <ul class="stop-list">
         @foreach (var stop in Model.Stops)
         {
-            <div class="stop-item" data-id="@stop.Id"
+            <li class="stop-item" data-id="@stop.Id"
                  data-lat="@stop.Latitude.ToString(System.Globalization.CultureInfo.InvariantCulture)"
                  data-lon="@stop.Longitude.ToString(System.Globalization.CultureInfo.InvariantCulture)">
 
@@ -41,9 +41,9 @@
                         <button class="icon-btn btn-edit-close" title="Скасувати"><img src="~/images/icons/close.svg" alt="CloseIcon" /></button>
                     </div>
                 }
-            </div>
+            </li>
         }
-    </div>
+    </ul>
 
     <template id="tpl-add-stop">
         <form id="form-add-stop" class="modal-form-layout">
@@ -71,7 +71,7 @@
                         <span class="spinner-icon hidden">🔄</span>
                     </button>
                 </div>
-                <div id="search-suggestions" class="suggestions-dropdown hidden"></div>
+                <ul id="search-suggestions" class="suggestions-dropdown hidden"></ul>
             </div>
 
             <div class="form-grid-2">

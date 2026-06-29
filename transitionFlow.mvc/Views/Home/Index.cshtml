@@ -48,7 +48,8 @@
     <script>
         window.TransitData = {
             stops: @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.Stops, new System.Text.Json.JsonSerializerOptions { PropertyNamingPolicy = System.Text.Json.JsonNamingPolicy.CamelCase })),
-            routes: @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.Routes, new System.Text.Json.JsonSerializerOptions { PropertyNamingPolicy = System.Text.Json.JsonNamingPolicy.CamelCase }))
+            routes: @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.Routes, new System.Text.Json.JsonSerializerOptions { PropertyNamingPolicy = System.Text.Json.JsonNamingPolicy.CamelCase })),
+            vehicles: @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.Vehicles, new System.Text.Json.JsonSerializerOptions { PropertyNamingPolicy = System.Text.Json.JsonNamingPolicy.CamelCase }))
         };
     </script>
 

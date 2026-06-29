@@ -6,15 +6,27 @@ $(function () {
         zoom: 14
     });
 
-    if (window.TransitData) {
+    async function setupMapData() {
+        if (!window.TransitData) return;
+
         if (window.TransitData.stops) {
             window.TransitMapInstance.renderStops(window.TransitData.stops, window.TransitData.routes || []);
         }
 
         if (window.TransitData.routes && window.TransitData.stops) {
-            window.TransitMapInstance.renderRoutes(window.TransitData.routes, window.TransitData.stops);
+            await window.TransitMapInstance.renderRoutes(window.TransitData.routes, window.TransitData.stops);
+        }
+
+        if (window.TransitData.vehicles) {
+            window.TransitMapInstance.renderAndAnimateVehicles(
+                window.TransitData.vehicles,
+                window.TransitData.routes || [],
+                window.TransitData.stops || []
+            );
         }
     }
+
+    setupMapData();
 
     function switchTab(tabName, updateUrl = true) {
         const $targetTrigger = $(`.tab-trigger[data-tab="${tabName}"]`);

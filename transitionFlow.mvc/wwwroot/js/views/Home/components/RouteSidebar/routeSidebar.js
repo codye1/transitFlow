@@ -1,17 +1,21 @@
 ﻿$(function () {
+    'use strict';
+
     let debounceTimer = null;
     let savedRouteState = null;
 
     const api = window.RouteSidebarApi;
     const validator = window.RouteSidebarValidator;
+    const ModalManager = window.Modal;
 
-    // Ініціалізуємо правила, якщо плагін валідації вже доступний
+    // Ініціалізація кастомних правил валідації
     if (validator && typeof validator.initRouteCustomRules === "function") {
         validator.initRouteCustomRules();
     }
 
     const getMap = () => window.TransitMapInstance;
 
+    // Видалення маршруту
     $(document).on('click', '.btn-delete-route', function (e) {
         e.stopPropagation();
         const routeId = $(this).closest('.route-item').data('id');
@@ -34,50 +38,89 @@
             });
     });
 
+    // Клік на маршрут для фокусування на карті
     $(document).on('click', '.route-item', function (e) {
-        console.log("Клік по route-item зафіксовано");
         if ($(this).hasClass('is-editing') || $(e.target).closest('.route-actions').length) {
-            console.log("Клік проігноровано (редагування або кнопки дій)");
             return;
         }
         const map = getMap();
         const routeId = $(this).data('id');
-        console.log("Фокусування на маршруті ID:", routeId);
-        console.log(map);
         if (map && routeId !== undefined) {
             map.focusOnRoute(Number(routeId));
         }
     });
 
+    // Кнопка відкриття модалки
     $(document).on('click', '#open-route-modal-btn', function () {
         openAddRouteModal();
     });
 
     function openAddRouteModal() {
-        window.Modal.open('Новий маршрут', '#tpl-add-route', function ($form) {
+        if (!ModalManager) {
+            console.error('Global Modal manager library instance not found.');
+            return;
+        }
 
-            // Безпечна перевірка плагіна валідації перед викликом
-            if (typeof $form.validate === "function") {
-                $form.validate({
-                    ...validator.routeFormRules,
-                    submitHandler: function (form, e) {
-                        e.preventDefault();
-                        submitRouteForm($form);
-                    }
+        ModalManager.open('Новий маршрут', '#tpl-add-route', {
+            ...validator.routeFormRules,
+            showErrors: function (errorMap, errorList) {
+                this.defaultShowErrors();
+
+                const $form = $(this.currentForm);
+                const $submitBtn = $form.find('#btn-submit-route');
+
+                // Якщо є помилки валідації, блокуємо кнопку відправки
+                if (this.numberOfInvalids() > 0) {
+                    $submitBtn.prop('disabled', true);
+                } else {
+                    $submitBtn.prop('disabled', false);
+                }
+            },
+            submitHandler: (form) => {
+                const $form = $(form);
+
+                const stopIds = [];
+                $form.find('#selected-stops-list .selected-stop-item').each(function () {
+                    stopIds.push($(this).data('stop-id'));
                 });
-            } else {
-                $form.on('submit', function (e) {
-                    e.preventDefault();
-                    submitRouteForm($form);
-                });
+
+                const routeData = {
+                    number: $form.find('#route-number').val().trim(),
+                    type: $form.find('#route-type').val(),
+                    name: $form.find('#route-name').val().trim(),
+                    color: $form.find('#selected-route-color').val(),
+                    selectedStops: stopIds
+                };
+
+                const $submitBtn = $form.find('#btn-submit-route');
+                $submitBtn.prop('disabled', true).addClass('loading');
+
+                api.createRoute(routeData)
+                    .done(() => {
+                        savedRouteState = null;
+                        window.location.reload();
+                    })
+                    .fail((xhr) => {
+                        if (xhr.status === 401) {
+                            window.location.href = '/login';
+                            return;
+                        }
+                        alert('Помилка збереження маршруту');
+                    })
+                    .always(() => {
+                        $submitBtn.prop('disabled', false).removeClass('loading');
+                    });
             }
         });
 
         const $modalBody = $('#modal-body-content');
+        const $form = $modalBody.find('form');
         const $submitBtn = $modalBody.find('#btn-submit-route');
         const $selectedList = $modalBody.find('#selected-stops-list');
         const $bucket = $modalBody.find('#available-stops-bucket');
+        const $stopsTrigger = $modalBody.find('input[name="selectedStops"]');
 
+        // Відновлення стану форми, якщо повернулися з карти
         if (savedRouteState) {
             $modalBody.find('#route-number').val(savedRouteState.number);
             $modalBody.find('#route-type').val(savedRouteState.type);
@@ -97,19 +140,10 @@
             $modalBody.find('.color-dot').first().addClass('active');
         }
 
-        function validateForm() {
-            const number = $modalBody.find('#route-number').val().trim();
-            const name = $modalBody.find('#route-name').val().trim();
-            const hasStops = $selectedList.find('.selected-stop-item').length >= 2;
-            $submitBtn.prop('disabled', !(number && name && hasStops));
-        }
-
-        validateForm();
-        $modalBody.on('input', '#route-number, #route-name', validateForm);
-
+        // Вибір кольору
         $modalBody.on('click', '.color-dot', function () {
             const color = $(this).data('color');
-            $modalBody.find('#selected-route-color').val(color);
+            $modalBody.find('#selected-route-color').val(color).valid(); // .valid() тригерить перевірку
             $(this).addClass('active').siblings().removeClass('active');
         });
 
@@ -118,18 +152,18 @@
             const stopName = $btn.text().trim();
 
             const $selectedItem = $(`
-                <div class="selected-stop-item" data-stop-id="${stopId}" style="display: flex; align-items: center; justify-content: space-between; padding: var(--space-2); background: var(--color-bg-subtle, #f8fafc); border: 1px solid var(--color-border); border-radius: var(--radius-sm); margin-bottom: 4px;">
+                <li class="selected-stop-item" data-stop-id="${stopId}" style="display: flex; align-items: center; justify-content: space-between; padding: var(--space-2); background: var(--color-bg-subtle, #f8fafc); border: 1px solid var(--color-border); border-radius: var(--radius-sm); margin-bottom: 4px;">
                     <span class="stop-order-index" style="font-weight: 600; font-size: 0.8rem; margin-right: 8px; color: var(--color-muted);"></span>
                     <span class="stop-title-text" style="flex-grow: 1; font-size: 0.85rem;">${stopName}</span>
                     <button type="button" class="btn-remove-selected-stop" style="background: transparent; border: none; color: #ef4444; cursor: pointer; font-size: 1rem; padding: 0 var(--space-2);">✕</button>
-                </div>
+                </li>
             `);
 
             $selectedList.append($selectedItem);
-            $btn.addClass('hidden');
+            $btn.parent('#bucket-item').addClass('hidden');
 
             updateOrderIndexes();
-            validateForm();
+            triggerStopsValidation();
         }
 
         $modalBody.on('click', '.bucket-item-btn', function () {
@@ -138,18 +172,18 @@
 
         $modalBody.on('click', '.btn-remove-selected-stop', function () {
             const $item = $(this).closest('.selected-stop-item');
-            const stopId = $item.data('stop-id');
-            $bucket.find(`.bucket-item-btn[data-stop-id="${stopId}"]`).removeClass('hidden');
+            const stopId = $item.data('id' || $item.data('stop-id'));
+            $bucket.find(`.bucket-item-btn[data-stop-id="${stopId}"]`).parent('#bucket-item').removeClass('hidden');
             $item.remove();
             updateOrderIndexes();
-            validateForm();
+            triggerStopsValidation();
         });
 
         function updateOrderIndexes() {
             $selectedList.find('.selected-stop-item').each(function (index) {
                 $(this).find('.stop-order-index').text(`${index + 1}.`);
             });
-            const totalVisibleInBucket = $bucket.find('.bucket-item-btn:not(.hidden)').length;
+            const totalVisibleInBucket = $bucket.find('#bucket-item:not(.hidden)').length;
             if (totalVisibleInBucket === 0) {
                 $modalBody.find('#bucket-empty-msg').removeClass('hidden');
             } else {
@@ -157,11 +191,20 @@
             }
         }
 
+        // Змушує валідатор перевірити список зупинок при додаванні/видаленні
+        function triggerStopsValidation() {
+            if ($stopsTrigger.length) {
+                const count = $selectedList.find('.selected-stop-item').length;
+                $stopsTrigger.val(count >= 2 ? "valid" : "").valid();
+            }
+        }
+
         $modalBody.on('click', '#js-close-route-modal', function (e) {
             e.preventDefault();
-            window.Modal.close();
+            ModalManager.close();
         });
 
+        // Вибір зупинок на карті
         $modalBody.on('click', '#btn-route-pick-map', function () {
             const stopIds = [];
             $selectedList.find('.selected-stop-item').each(function () {
@@ -186,7 +229,7 @@
                 });
             });
 
-            window.Modal.close();
+            ModalManager.close();
 
             $('#banner-text').text('Оберіть наявні зупинки на карті по черзі. Після завершення натисніть "Підтвердити"');
             $('#btn-banner-confirm').removeClass('hidden');
@@ -202,41 +245,6 @@
                 });
             }
         });
-    }
-
-    // Допоміжна функція відправки форми
-    function submitRouteForm($form) {
-        const stopIds = [];
-        $form.find('#selected-stops-list .selected-stop-item').each(function () {
-            stopIds.push($(this).data('stop-id'));
-        });
-
-        const routeData = {
-            number: $form.find('#route-number').val().trim(),
-            type: $form.find('#route-type').val(),
-            name: $form.find('#route-name').val().trim(),
-            color: $form.find('#selected-route-color').val(),
-            selectedStops: stopIds
-        };
-
-        const $submitBtn = $form.find('#btn-submit-route');
-        $submitBtn.prop('disabled', true).addClass('loading');
-
-        window.RouteSidebarApi.createRoute(routeData)
-            .done(() => {
-                savedRouteState = null;
-                window.location.reload();
-            })
-            .fail((xhr) => {
-                if (xhr.status === 401) {
-                    window.location.href = '/login';
-                    return;
-                }
-                alert('Помилка збереження маршруту');
-            })
-            .always(() => {
-                $submitBtn.prop('disabled', false).removeClass('loading');
-            });
     }
 
     function setupBannerEvents() {
