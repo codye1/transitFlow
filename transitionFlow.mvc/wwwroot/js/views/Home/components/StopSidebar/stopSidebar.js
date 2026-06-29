@@ -4,12 +4,9 @@
     let temporaryCoords = null;
 
     const getMap = () => window.TransitMapInstance;
-
-    // Отримуємо наші модулі з глобального вікна
     const Api = window.StopSidebarApi;
     const Validator = window.StopSidebarValidator;
 
-    // === 1. ВИДАЛЕННЯ ЗУПИНКИ ===
     $(document).on('click', '.btn-delete-stop', function (e) {
         e.stopPropagation();
         const stopId = $(this).closest('.stop-item').data('id');
@@ -33,7 +30,6 @@
             });
     });
 
-    // === 2. ІНЛАЙН РЕДАГУВАННЯ НАЗВИ ===
     $(document).on('click', '.btn-edit-stop', function (e) {
         e.stopPropagation();
         const $item = $(this).closest('.stop-item');
@@ -103,7 +99,6 @@
         }
     });
 
-    // === 3. КЛІК НА ЕЛЕМЕНТ СПИСКУ (ФОКУС КАРТИ) ===
     $(document).on('click', '.stop-item', function (e) {
         if ($(this).hasClass('is-editing') || $(e.target).closest('.stop-actions, .editing-container').length) {
             return;
@@ -123,12 +118,14 @@
         }
     });
 
-    // === 4. МОДАЛЬНЕ ВІКНО СТВОРЕННЯ ЗУПИНКИ ===
     function openAddStopModal() {
         window.Modal.open('Нова зупинка', '#tpl-add-stop', function ($form) {
+            const $submitBtn = $form.find('#btn-submit-stop');
 
             $form.validate({
                 ...Validator.stopFormRules,
+                onkeyup: function () { this.checkForm() ? $submitBtn.prop('disabled', false) : $submitBtn.prop('disabled', true); },
+                onclick: function () { this.checkForm() ? $submitBtn.prop('disabled', false) : $submitBtn.prop('disabled', true); },
                 submitHandler: function (form, e) {
                     e.preventDefault();
 
@@ -139,7 +136,6 @@
                         longitude: parseFloat($form.find('#stop-lon').val())
                     };
 
-                    const $submitBtn = $form.find('#btn-submit-stop');
                     $submitBtn.prop('disabled', true).addClass('loading');
 
                     Api.createStop(stopData)
@@ -159,6 +155,8 @@
                         });
                 }
             });
+
+            $submitBtn.prop('disabled', !$form.valid());
         });
 
         const $modalBody = $('#modal-body-content');
@@ -174,16 +172,6 @@
             if (savedStopState.latitude) $modalBody.find('#stop-lat').val(savedStopState.latitude);
             if (savedStopState.longitude) $modalBody.find('#stop-lon').val(savedStopState.longitude);
         }
-
-        function validateForm() {
-            const name = $modalBody.find('#stop-name').val().trim();
-            const lat = $modalBody.find('#stop-lat').val().trim();
-            const lon = $modalBody.find('#stop-lon').val().trim();
-            $submitBtn.prop('disabled', !(name && lat && lon));
-        }
-
-        validateForm();
-        $modalBody.on('input', '#stop-name, #stop-lat, #stop-lon', validateForm);
 
         function fetchSuggestions(query) {
             if (!query.trim()) {
@@ -223,7 +211,7 @@
                             $modalBody.find('#address-search').val(displayName);
 
                             $suggestions.addClass('hidden').empty();
-                            validateForm();
+                            $submitBtn.prop('disabled', !$('#modal-body-content').find('form').valid());
                         });
 
                         $suggestions.append($btn);
@@ -276,7 +264,6 @@
         });
     }
 
-    // === 5. ІВЕНТИ БАНЕРА ===
     $('#btn-banner-confirm').on('click', function () {
         if (!savedStopState) return;
 

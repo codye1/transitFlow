@@ -53,7 +53,8 @@ namespace transitFlow.api.Repositories.Vehicle
         public async Task<bool> UpdateVehicleAsync(Models.Vehicle vehicle)
         {
             _context.Vehicles.Update(vehicle);
-            return await _context.SaveChangesAsync() > 0;
+            await _context.SaveChangesAsync();
+            return true; 
         }
         public async Task<Models.Vehicle?> GetVehicleByIdAsync(int id)
         {

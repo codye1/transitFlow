@@ -1,30 +1,37 @@
-﻿window.StopSidebarValidator = {
-    stopFormRules: {
-        rules: {
-            name: {
-                required: true
+﻿
+(function (window) {
+    'use strict';
+
+    const StopSidebarValidator = {
+        stopFormRules: {
+            rules: {
+                name: {
+                    required: true
+                },
+                latitude: {
+                    required: true,
+                    number: true
+                },
+                longitude: {
+                    required: true,
+                    number: true
+                }
             },
-            latitude: {
-                required: true,
-                number: true
-            },
-            longitude: {
-                required: true,
-                number: true
-            }
-        },
-        messages: {
-            name: {
-                required: "Будь ласка, введіть назву зупинки."
-            },
-            latitude: {
-                required: "Координата широти обов'язкова.",
-                number: "Введіть коректне число."
-            },
-            longitude: {
-                required: "Координата довготи обов'язкова.",
-                number: "Введіть коректне число."
+            messages: {
+                name: {
+                    required: "Будь ласка, введіть назву зупинки."
+                },
+                latitude: {
+                    required: "Координата широти обов'язкова.",
+                    number: "Введіть коректне число."
+                },
+                longitude: {
+                    required: "Координата довготи обов'язкова.",
+                    number: "Введіть коректне число."
+                }
             }
         }
-    }
-};
+    };
+
+    window.StopSidebarValidator = StopSidebarValidator;
+})(window);

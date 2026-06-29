@@ -51,7 +51,6 @@
             routes: @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.Routes, new System.Text.Json.JsonSerializerOptions { PropertyNamingPolicy = System.Text.Json.JsonNamingPolicy.CamelCase }))
         };
     </script>
-    <script src="~/js/helpers/ModalManager.js" asp-append-version="true"></script>
 
     <script src="~/js/views/Home/home.js" asp-append-version="true" type="module"></script>
 }

@@ -44,6 +44,8 @@
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>
 
+    <script src="~/js/helpers/ModalManager.js" asp-append-version="true"></script>
+
     @foreach (var script in AssetManager.GetScripts())
     {
         <script src="@script"></script>

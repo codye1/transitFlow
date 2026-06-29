@@ -21,7 +21,7 @@
     <div class="vehicle-list">
         @if (!Model.Vehicles.Any())
         {
-            <p class="text-sm text-muted text-center py-4">Транспорту ще немає</p>
+            <p>Транспорту ще немає</p>
         }
 
         @foreach (var vehicle in Model.Vehicles)
@@ -81,15 +81,16 @@
             <div class="form-grid-2">
                 <div class="form-group">
                     <label class="form-label">Держномер</label>
-                    <input type="text" name="plateNumber" id="vehicle-plate" required placeholder="АА1234ВВ" class="form-input" />
+                    <input type="text" name="plateNumber" id="vehicle-plate" required placeholder="AА1234ВВ" class="form-input" />
                 </div>
 
                 <div class="form-group">
                     <label class="form-label">Тип</label>
                     <select name="type" id="vehicle-type" class="form-input">
-                        <option value="bus">Автобус</option>
-                        <option value="tram">Трамвай</option>
-                        <option value="trolleybus">Тролейбус</option>
+                        <option value="Bus">Автобус</option>
+                        <option value="Tram">Трамвай</option>
+                        <option value="Trolleybus">Тролейбус</option>
+                        <option value="Minibus">Мікроавтобус</option>
                     </select>
                 </div>
             </div>
@@ -122,7 +123,7 @@
                 <select name="status" id="vehicle-status" class="form-input">
                     @foreach (var status in Model.AvailableStatuses)
                     {
-                        <option value="@status.Key">@status.Value</option>
+                        <option value="@status.Key.ToString()">@status.Value</option>
                     }
                 </select>
             </div>

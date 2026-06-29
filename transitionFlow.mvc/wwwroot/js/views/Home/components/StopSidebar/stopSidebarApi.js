@@ -1,26 +1,33 @@
-﻿window.StopSidebarApi = {
-    createStop: function (stopData) {
-        return $.ajax({
-            url: '/stops',
-            type: 'POST',
-            contentType: 'application/json',
-            data: JSON.stringify(stopData)
-        });
-    },
+﻿
+(function (window, $) {
+    'use strict';
 
-    updateStop: function (stopId, updateData) {
-        return $.ajax({
-            url: `/stops/${stopId}`,
-            type: 'PUT',
-            contentType: 'application/json',
-            data: JSON.stringify(updateData)
-        });
-    },
+    const StopSidebarApi = {
+        createStop: function (stopData) {
+            return $.ajax({
+                url: '/stops',
+                type: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify(stopData)
+            });
+        },
 
-    deleteStop: function (stopId) {
-        return $.ajax({
-            url: `/stops/${stopId}`,
-            type: 'DELETE'
-        });
-    }
-};
+        updateStop: function (stopId, updateData) {
+            return $.ajax({
+                url: `/stops/${stopId}`,
+                type: 'PUT',
+                contentType: 'application/json',
+                data: JSON.stringify(updateData)
+            });
+        },
+
+        deleteStop: function (stopId) {
+            return $.ajax({
+                url: `/stops/${stopId}`,
+                type: 'DELETE'
+            });
+        }
+    };
+
+    window.StopSidebarApi = StopSidebarApi;
+})(window, jQuery);

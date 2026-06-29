@@ -88,7 +88,9 @@
                 <label class="form-label">Зупинки (у порядку маршруту)</label>
                 <div id="selected-stops-list" class="selected-stops-container">
                 </div>
+                <input type="text" id="selected-stops-validator" name="selectedStops" value="1" data-stops-list-target="#selected-stops-list" style="position: absolute; opacity: 0; width: 1px; height: 1px; pointer-events: none;" />
 
+                
                 <div class="stops-bucket-selector" id="available-stops-bucket">
     @foreach (var stop in Model.AllStops)
     {

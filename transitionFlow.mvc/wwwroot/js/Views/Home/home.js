@@ -16,15 +16,37 @@ $(function () {
         }
     }
 
+    function switchTab(tabName, updateUrl = true) {
+        const $targetTrigger = $(`.tab-trigger[data-tab="${tabName}"]`);
+        const $targetPanel = $(`#panel-${tabName}`);
+
+        if ($targetTrigger.length === 0) return;
+
+        $('.tab-trigger').removeClass('active');
+        $targetTrigger.addClass('active');
+
+        $('.tab-panel').removeClass('active');
+        $targetPanel.addClass('active');
+
+        if (updateUrl) {
+            history.pushState(null, null, `#${tabName}`);
+        }
+    }
+
     $('.tab-trigger').on('click', function () {
         const targetTab = $(this).data('tab');
+        switchTab(targetTab);
+    });
 
-        // Зміна активного стану кнопок
-        $('.tab-trigger').removeClass('active');
-        $(this).addClass('active');
+    const currentHash = window.location.hash.replace('#', '');
+    if (currentHash) {
+        switchTab(currentHash, false);
+    } else {
+        switchTab('routes', false);
+    }
 
-        // Відображення відповідної панелі сайдбару
-        $('.tab-panel').removeClass('active');
-        $(`#panel-${targetTab}`).addClass('active');
+    window.addEventListener('popstate', function () {
+        const hash = window.location.hash.replace('#', '') || 'routes';
+        switchTab(hash, false);
     });
 });
