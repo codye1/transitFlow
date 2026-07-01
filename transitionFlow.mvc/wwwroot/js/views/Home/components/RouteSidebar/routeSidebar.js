@@ -1,6 +1,6 @@
 ﻿import api from './routeSidebarApi.js';
 import validator from './routeSidebarValidator.js';
-import ModalManager from '../../../../helpers/ModalManager.js';
+import Modal from '../../../../helpers/ModalManager.js';
 
 $(function () {
     'use strict';
@@ -52,12 +52,12 @@ $(function () {
     });
 
     function openAddRouteModal() {
-        if (!ModalManager) {
+        if (!Modal) {
             console.error('Global Modal manager library instance not found.');
             return;
         }
 
-        ModalManager.open('Новий маршрут', '#tpl-add-route', {
+        Modal.open('Новий маршрут', '#tpl-add-route', {
             ...validator.routeFormRules,
             showErrors: function (errorMap, errorList) {
                 this.defaultShowErrors();
@@ -193,7 +193,7 @@ $(function () {
 
         $modalBody.on('click', '#js-close-route-modal', function (e) {
             e.preventDefault();
-            ModalManager.close();
+            Modal.close();
         });
 
         $modalBody.on('click', '#btn-route-pick-map', function () {
@@ -220,7 +220,7 @@ $(function () {
                 });
             });
 
-            ModalManager.close();
+            Modal.close();
 
             $('#banner-text').text('Оберіть наявні зупинки на карті по черзі. Після завершення натисніть "Підтвердити"');
             $('#btn-banner-confirm').removeClass('hidden');

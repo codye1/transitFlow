@@ -1,6 +1,6 @@
 ﻿import api from './vehicleSidebarApi.js';
 import validator from './vehicleSidebarValidator.js';
-import ModalManager from '../../../../helpers/ModalManager.js';
+import Modal from '../../../../helpers/ModalManager.js';
 
 $(function () {
     'use strict';
@@ -122,12 +122,12 @@ $(function () {
     });
 
     function openAddVehicleModal() {
-        if (!ModalManager) {
+        if (!Modal) {
             console.error('Global Modal manager library initialization instances not found.');
             return;
         }
 
-        ModalManager.open('Новий транспортний засіб', '#tpl-add-vehicle', {
+        Modal.open('Новий транспортний засіб', '#tpl-add-vehicle', {
             ...validator.vehicleFormRules,
             showErrors: function (errorMap, errorList) {
                 this.defaultShowErrors();
@@ -158,7 +158,7 @@ $(function () {
 
                 Api.createVehicle(vehicleData)
                     .done(() => {
-                        ModalManager.close();
+                        Modal.close();
                         window.location.reload();
                     })
                     .fail((xhr) => {
@@ -178,7 +178,7 @@ $(function () {
 
         $modalBody.on('click', '#js-close-vehicle-modal', function (e) {
             e.preventDefault();
-            ModalManager.close();
+            Modal.close();
         });
     }
 

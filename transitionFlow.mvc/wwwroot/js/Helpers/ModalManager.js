@@ -47,6 +47,6 @@
     }
 }
 
-const ModalManager = new ModalManager('app-modal');
+const Modal = new ModalManager('app-modal');
 
-export default ModalManager;
+export default Modal;

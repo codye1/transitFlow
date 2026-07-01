@@ -1,6 +1,6 @@
 ﻿import api from './stopSidebarApi.js';
 import validator from './stopSidebarValidator.js';
-import ModalManager from '../../../../helpers/ModalManager.js';
+import Modal from '../../../../helpers/ModalManager.js';
 
 $(function () {
     'use strict';
@@ -123,12 +123,12 @@ $(function () {
     });
 
     function openAddStopModal() {
-        if (!ModalManager) {
+        if (!Modal) {
             console.error('Global Modal manager library instance not found.');
             return;
         }
 
-        ModalManager.open('Нова зупинка', '#tpl-add-stop', {
+        Modal.open('Нова зупинка', '#tpl-add-stop', {
             ...validator.stopFormRules,
             showErrors: function (errorMap, errorList) {
                 this.defaultShowErrors();
@@ -264,7 +264,7 @@ $(function () {
                 addressSearch: $modalBody.find('#address-search').val()
             };
 
-            ModalManager.close();
+            Modal.close();
             temporaryCoords = null;
 
             $('#banner-text').text('Натисніть на карту, щоб обрати координати зупинки');
