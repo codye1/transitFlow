@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System.Security.Claims;
 using transitFlow.api.Models;
+using transitFlow.api.Models.DTO;
 using transitFlow.api.Models.DTO.Vehicle;
 using transitFlow.api.Repositories.Vehicle;
 
@@ -63,7 +64,7 @@ namespace transitFlow.api.Controllers
         [Authorize]
         public async Task<ActionResult<VehicleResponseDto>> CreateVehicle([FromBody] CreateVehicleDto dto)
         {
-            if (dto == null) return BadRequest();
+            if (dto == null) return BadRequest(ApiErrors.Single("ValidationError", "Request body is required."));
             _logger.LogInformation("Started validation");
             var (plateExists, routeExists) = await _vehicleRepository.ValidateVehicleCreationAsync(dto.PlateNumber, dto.RouteId);
 
@@ -81,12 +82,13 @@ namespace transitFlow.api.Controllers
 
             if (errors.Count > 0)
             {
-                return BadRequest(errors);
+                var validationErrors = errors.SelectMany(error => error.Value.Select(message => new ApiErrorDto(error.Key, message))).ToList();
+                return BadRequest(validationErrors);
             }
             _logger.LogInformation("Finished VALIDATION");
             var userIdString = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
             if (string.IsNullOrEmpty(userIdString) || !int.TryParse(userIdString, out int userId))
-                return Unauthorized();
+                return Unauthorized(ApiErrors.Single("Unauthorized", "User ID not found in token."));
 
             var newVehicle = new Models.Vehicle
             {
@@ -124,7 +126,7 @@ namespace transitFlow.api.Controllers
         public async Task<IActionResult> DeleteVehicle(int id)
         {
             var deleted = await _vehicleRepository.DeleteVehicleAsync(id);
-            if (!deleted) return NotFound();
+            if (!deleted) return NotFound(ApiErrors.Single("NotFound", $"Vehicle with ID {id} not found."));
 
             return NoContent();
         }
@@ -134,10 +136,10 @@ namespace transitFlow.api.Controllers
         [Authorize]
         public async Task<ActionResult<VehicleResponseDto>> PatchVehicle(int id, [FromBody] PatchVehicleDto dto)
         {
-            if (dto == null) return BadRequest();
+            if (dto == null) return BadRequest(ApiErrors.Single("ValidationError", "Request body is required."));
 
             var vehicle = await _vehicleRepository.GetVehicleByIdAsync(id);
-            if (vehicle == null) return NotFound($"Vehicle with ID {id} not found.");
+            if (vehicle == null) return NotFound(ApiErrors.Single("NotFound", $"Vehicle with ID {id} not found."));
 
             bool hasChanges = false;
 

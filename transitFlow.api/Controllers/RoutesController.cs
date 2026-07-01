@@ -63,15 +63,15 @@ namespace transitFlow.api.Controllers
         [Authorize]
         public async Task<ActionResult<RouteResponseDto>> CreateRoute([FromBody] CreateRouteDto dto)
         {
-            if (dto == null) return BadRequest();
+            if (dto == null) return BadRequest(ApiErrors.Single("ValidationError", "Request body is required."));
 
             var userIdString = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
             if (string.IsNullOrEmpty(userIdString) || !int.TryParse(userIdString, out int userId))
-                return Unauthorized();
+                return Unauthorized(ApiErrors.Single("Unauthorized", "User ID not found in token."));
             
 
             if (!await _stopRepository.AreStopsValidAsync(dto.SelectedStops))
-                return BadRequest("One or more selected stops do not exist.");
+                return BadRequest(ApiErrors.Single("ValidationError", "One or more selected stops do not exist."));
 
             var newRoute = new RouteEntity
             {
@@ -117,7 +117,7 @@ namespace transitFlow.api.Controllers
         public async Task<IActionResult> DeleteRoute(int id)
         {
             var deleted = await _routeRepository.DeleteRouteAsync(id);
-            if (!deleted) return NotFound();
+            if (!deleted) return NotFound(ApiErrors.Single("NotFound", $"Route with ID {id} not found."));
 
             return NoContent();
         }

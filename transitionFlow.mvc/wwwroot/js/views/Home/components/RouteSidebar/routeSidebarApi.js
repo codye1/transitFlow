@@ -4,8 +4,9 @@
             url: '/routes',
             type: 'POST',
             contentType: 'application/json',
-            data: JSON.stringify(routeData)
-        });
+            data: JSON.stringify(routeData),
+            dataType: 'html'
+        }); 
     },
 
     deleteRoute: function (routeId) {

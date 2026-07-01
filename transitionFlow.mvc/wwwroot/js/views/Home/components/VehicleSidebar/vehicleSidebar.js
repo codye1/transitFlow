@@ -27,9 +27,18 @@ $(function () {
 
         if (!confirm(`Видалити транспортний засіб [${plateNumber}]?`)) return;
 
-        Api.deleteVehicle(vehicleId)
+        api.deleteVehicle(vehicleId)
             .done(() => {
-                window.location.reload();
+                const map = getMap();
+                if (map && typeof map.removeVehicle === 'function') {
+                    map.removeVehicle(vehicleId);
+                }
+
+                if (window.TransitData && Array.isArray(window.TransitData.vehicles)) {
+                    window.TransitData.vehicles = window.TransitData.vehicles.filter(v => Number(v.id ?? v.Id) !== Number(vehicleId));
+                }
+
+                $item.remove();
             })
             .fail((xhr) => {
                 if (xhr.status === 401) {
@@ -156,10 +165,35 @@ $(function () {
                 const $submitBtn = $form.find('#btn-submit-vehicle');
                 $submitBtn.prop('disabled', true).addClass('loading');
 
-                Api.createVehicle(vehicleData)
-                    .done(() => {
+                api.createVehicle(vehicleData)
+                    .done((html) => {
+                        const $newItem = $(html);
+                        $('.vehicle-list').append($newItem);
+
+                        const vehicleId = Number($newItem.data('id'));
+                        const routeIdRaw = $newItem.data('route-id');
+                        const routeId = routeIdRaw === '' || routeIdRaw === null || routeIdRaw === undefined ? null : Number(routeIdRaw);
+                        const vehicleModel = {
+                            id: vehicleId,
+                            plateNumber: String($newItem.data('plate-number') || ''),
+                            type: String($newItem.data('type') || ''),
+                            status: String($newItem.data('status') || ''),
+                            model: String($newItem.data('model') || ''),
+                            routeId: routeId,
+                            capacity: Number($newItem.data('capacity') || 0),
+                            createdById: Number($newItem.data('created-by-id') || 0)
+                        };
+
+                        if (window.TransitData && Array.isArray(window.TransitData.vehicles)) {
+                            window.TransitData.vehicles.push(vehicleModel);
+                        }
+
+                        const map = getMap();
+                        if (map && typeof map.addVehicle === 'function') {
+                            map.addVehicle(vehicleModel);
+                        }
+
                         Modal.close();
-                        window.location.reload();
                     })
                     .fail((xhr) => {
                         if (xhr.status === 401) {

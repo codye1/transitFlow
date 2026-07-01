@@ -28,12 +28,24 @@ build_metadata.AdditionalFiles.CssScope =
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcSG9tZVxDb21wb25lbnRzXFJvdXRlU2lkZWJhclxEZWZhdWx0LmNzaHRtbA==
 build_metadata.AdditionalFiles.CssScope = 
 
+[D:/С\#/transitFlow.api/transitionFlow.mvc/Views/Home/Components/RouteSidebar/Partials/_RouteItem.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcSG9tZVxDb21wb25lbnRzXFJvdXRlU2lkZWJhclxQYXJ0aWFsc1xfUm91dGVJdGVtLmNzaHRtbA==
+build_metadata.AdditionalFiles.CssScope = 
+
 [D:/С\#/transitFlow.api/transitionFlow.mvc/Views/Home/Components/StopSidebar/Default.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcSG9tZVxDb21wb25lbnRzXFN0b3BTaWRlYmFyXERlZmF1bHQuY3NodG1s
 build_metadata.AdditionalFiles.CssScope = 
 
+[D:/С\#/transitFlow.api/transitionFlow.mvc/Views/Home/Components/StopSidebar/Partials/_StopItem.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcSG9tZVxDb21wb25lbnRzXFN0b3BTaWRlYmFyXFBhcnRpYWxzXF9TdG9wSXRlbS5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
 [D:/С\#/transitFlow.api/transitionFlow.mvc/Views/Home/Components/VehicleSidebar/Default.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcSG9tZVxDb21wb25lbnRzXFZlaGljbGVTaWRlYmFyXERlZmF1bHQuY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
+[D:/С\#/transitFlow.api/transitionFlow.mvc/Views/Home/Components/VehicleSidebar/Partials/_VehicleItem.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcSG9tZVxDb21wb25lbnRzXFZlaGljbGVTaWRlYmFyXFBhcnRpYWxzXF9WZWhpY2xlSXRlbS5jc2h0bWw=
 build_metadata.AdditionalFiles.CssScope = 
 
 [D:/С\#/transitFlow.api/transitionFlow.mvc/Views/Home/Index.cshtml]

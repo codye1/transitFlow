@@ -23,24 +23,8 @@
 
         @foreach (var route in Model.Routes)
         {
-            <li class="route-item" data-id="@route.Id">
-                <div class="route-color-indicator" style="background-color: @(string.IsNullOrEmpty(route.Color) ? "#3b82f6" : route.Color)"></div>
-
-                <div class="route-info">
-                    <div class="route-meta">
-                        <span class="route-number">№@route.Number</span>
-                    </div>
-                    <div class="route-name">@route.Name</div>
-                    <div class="route-stops-count">@(route.Stops?.Count() ?? 0) зупинок</div>
-                </div>
-                @if (Model.User != null && (route.CreatedById == Model.User.Id || Model.User.Roles.Contains(AppRole.Admin) || Model.User.Roles.Contains(AppRole.Moderator)))
-                {
-                    <div class="route-actions">
-                        <button class="icon-btn btn-edit-route" title="Редагувати"><img src="~/images/icons/edit.svg" alt="EditIcon" /></button>
-                        <button class="icon-btn btn-delete-route" title="Видалити"><img src="~/images/icons/delete.svg" alt="DeleteIcon" /></button>
-                    </div>
-                }
-            </li>
+            @await Html.PartialAsync("~/Views/Home/Components/RouteSidebar/Partials/_RouteItem.cshtml",
+            new RouteItemViewModel { Route = route, User = Model.User })
         }
     </ul>
 
@@ -91,7 +75,7 @@
                 <ul class="stops-bucket-selector" id="available-stops-bucket">
     @foreach (var stop in Model.AllStops)
     {
-        <li id="bucket-item">
+        <li cla="bucket-item">
         <button type="button" class="bucket-item-btn" 
                 data-stop-id="@stop.Id" 
                 data-lat="@stop.Latitude.ToString(System.Globalization.CultureInfo.InvariantCulture)" 
@@ -100,7 +84,6 @@
         </button>
                         </li>
     }
-    <div class="bucket-empty-state hidden" id="bucket-empty-msg">Всі зупинки додано</div>
 </ul>
 
                 <button type="button" id="btn-route-pick-map" class="btn-outline-map" style="margin-top: 10px;">

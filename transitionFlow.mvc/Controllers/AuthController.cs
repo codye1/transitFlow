@@ -20,7 +20,7 @@ namespace TransitFlow.mvc.Controllers
         }
 
         [HttpPost("/auth/login")]
-        public async Task<IActionResult> ProxyLogin([FromBody] object model)
+        public async Task<IActionResult> ProxyLogin([FromBody] AuthLoginRequestDto model)
         {
             var client = _httpClientFactory.CreateClient();
             var response = await client.PostAsJsonAsync("https://localhost:7094/auth/login", model);
@@ -53,7 +53,7 @@ namespace TransitFlow.mvc.Controllers
         }
 
         [HttpPost("/auth/register")]
-        public async Task<IActionResult> ProxyRegister([FromBody] object model)
+        public async Task<IActionResult> ProxyRegister([FromBody] AuthRegisterRequestDto model)
         {
             var client = _httpClientFactory.CreateClient();
             var response = await client.PostAsJsonAsync("https://localhost:7094/auth/register", model);

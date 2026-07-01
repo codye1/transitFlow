@@ -1,0 +1,27 @@
+﻿@model RouteItemViewModel
+@{
+    var canManage = Model.User != null &&
+        (Model.Route.CreatedById == Model.User.Id ||
+         Model.User.Roles.Contains(AppRole.Admin) ||
+         Model.User.Roles.Contains(AppRole.Moderator));
+
+    var routeColor = string.IsNullOrEmpty(Model.Route.Color) ? "#3b82f6" : Model.Route.Color;
+    var stopsJson = System.Text.Json.JsonSerializer.Serialize(Model.Route.Stops ?? Enumerable.Empty<int>());
+}
+<li class="route-item" data-id="@Model.Route.Id" data-color="@routeColor" data-stops="@stopsJson">
+    <div class="route-color-indicator" style="background-color: @routeColor"></div>
+    <div class="route-info">
+        <div class="route-meta">
+            <span class="route-number">№@Model.Route.Number</span>
+        </div>
+        <div class="route-name">@Model.Route.Name</div>
+        <div class="route-stops-count">@(Model.Route.Stops?.Count() ?? 0) зупинок</div>
+    </div>
+    @if (canManage)
+    {
+        <div class="route-actions">
+            <button class="icon-btn btn-edit-route" title="Редагувати"><img src="~/images/icons/edit.svg" alt="EditIcon" /></button>
+            <button class="icon-btn btn-delete-route" title="Видалити"><img src="~/images/icons/delete.svg" alt="DeleteIcon" /></button>
+        </div>
+    }
+</li>

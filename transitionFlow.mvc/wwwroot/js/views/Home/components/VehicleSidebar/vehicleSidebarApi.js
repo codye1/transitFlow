@@ -4,7 +4,8 @@
             url: '/vehicles',
             method: 'POST',
             contentType: 'application/json',
-            data: JSON.stringify(vehicleData)
+            data: JSON.stringify(vehicleData),
+            dataType: 'html'
         });
     },
 

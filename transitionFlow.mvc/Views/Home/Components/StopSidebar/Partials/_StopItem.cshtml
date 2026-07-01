@@ -1,0 +1,32 @@
+@model StopItemViewModel
+@{
+    var canManage = Model.User != null &&
+        (Model.Stop.CreatedById == Model.User.Id ||
+         Model.User.Roles.Contains(AppRole.Admin) ||
+         Model.User.Roles.Contains(AppRole.Moderator));
+
+    var latitude = Model.Stop.Latitude.ToString(System.Globalization.CultureInfo.InvariantCulture);
+    var longitude = Model.Stop.Longitude.ToString(System.Globalization.CultureInfo.InvariantCulture);
+}
+<li class="stop-item" data-id="@Model.Stop.Id" data-lat="@latitude" data-lon="@longitude">
+    <span class="stop-marker">📍</span>
+
+    <div class="stop-name"><b>@Model.Stop.Name</b></div>
+
+    @if (canManage)
+    {
+        <div class="editing-container">
+            <input type="text" class="edit-input" value="@Model.Stop.Name" autocomplete="off" />
+        </div>
+
+        <div class="stop-actions view-actions">
+            <button class="icon-btn btn-edit-stop" title="Редагувати"><img src="~/images/icons/edit.svg" alt="EditIcon" /></button>
+            <button class="icon-btn btn-delete-stop" title="Видалити"><img src="~/images/icons/delete.svg" alt="CloseIcon" /></button>
+        </div>
+
+        <div class="stop-actions edit-actions">
+            <button class="icon-btn btn-edit-accept" title="Зберегти"><img src="~/images/icons/accept.svg" alt="AcceptIcon" /></button>
+            <button class="icon-btn btn-edit-close" title="Скасувати"><img src="~/images/icons/close.svg" alt="CloseIcon" /></button>
+        </div>
+    }
+</li>
