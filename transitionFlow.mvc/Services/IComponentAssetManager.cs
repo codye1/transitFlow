@@ -3,8 +3,14 @@
     public interface IComponentAssetManager
     {
         void RegisterStyle(string src);
-        void RegisterScript(string src);
+        void RegisterScript(string src, bool isModule = false);
         List<string> GetStyles();
-        List<string> GetScripts();
+        List<ScriptModel> GetScripts();
+    }
+
+    public class ScriptModel
+    {
+        public string Src { get; set; } = string.Empty;
+        public bool IsModule { get; set; }
     }
 }

@@ -4,7 +4,7 @@ namespace TransitFlow.mvc.Services
     public class ComponentAssetManager : IComponentAssetManager
     {
         private readonly List<string> _styles = new List<string>();
-        private readonly List<string> _scripts = new List<string>();
+        private readonly List<ScriptModel> _scripts = new List<ScriptModel>();
 
         public void RegisterStyle(string src)
         {
@@ -14,11 +14,11 @@ namespace TransitFlow.mvc.Services
             }
         }
 
-        public void RegisterScript(string src)
+        public void RegisterScript(string src, bool isModule = false)
         {
-            if (!_scripts.Contains(src))
+            if (!_scripts.Any(s => s.Src == src))
             {
-                _scripts.Add(src);
+                _scripts.Add(new ScriptModel { Src = src, IsModule = isModule });
             }
         }
 
@@ -27,7 +27,7 @@ namespace TransitFlow.mvc.Services
             return _styles;
         }
 
-        public List<string> GetScripts()
+        public List<ScriptModel> GetScripts()
         {
             return _scripts;
         }

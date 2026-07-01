@@ -28,13 +28,11 @@
         if (!$form.length) return;
 
         if (typeof handlerOrRules === 'function') {
-            // Стара поведінка — простий submit колбек
             $form.on('submit', function (e) {
                 e.preventDefault();
                 handlerOrRules($(this));
             });
         } else {
-            // Об'єкт правил для jQuery Validate
             $form.validate(handlerOrRules);
         }
     }
@@ -49,6 +47,6 @@
     }
 }
 
-$(function () {
-    window.Modal = new ModalManager('app-modal');
-});
+const ModalManager = new ModalManager('app-modal');
+
+export default ModalManager;

@@ -1,13 +1,12 @@
-﻿$(function () {
-    'use strict';
+﻿import api from './vehicleSidebarApi.js';
+import validator from './vehicleSidebarValidator.js';
+import ModalManager from '../../../../helpers/ModalManager.js';
 
-    const Api = window.VehicleSidebarApi;
-    const Validator = window.VehicleSidebarValidator;
-    const ModalManager = window.Modal;
+$(function () {
+    'use strict';
 
     const getMap = () => window.TransitMapInstance;
 
-    // Клік на елемент транспорту для фокусування на карті
     $(document).on('click', '.vehicle-item', function (e) {
         if ($(e.target).closest('.js-vehicle-route-select, .js-vehicle-status-select, .btn-delete-vehicle').length) {
             return;
@@ -20,7 +19,6 @@
         }
     });
 
-    // Видалення транспортного засобу
     $(document).on('click', '.btn-delete-vehicle', function (e) {
         e.stopPropagation();
         const $item = $(this).closest('.vehicle-item');
@@ -46,7 +44,6 @@
             });
     });
 
-    // 1. Зміна маршруту автобуса через селект у списку
     $(document).on('change', '.js-vehicle-route-select', function (e) {
         e.preventDefault();
         const $select = $(this);
@@ -55,7 +52,7 @@
 
         $select.prop('disabled', true);
 
-        Api.updateRoute(vehicleId, routeId)
+        api.updateRoute(vehicleId, routeId)
             .done(() => {
                 if (window.TransitData && window.TransitData.vehicles) {
                     const vehicle = window.TransitData.vehicles.find(v => v.id === vehicleId);
@@ -84,7 +81,6 @@
             });
     });
 
-    // 2. Зміна статусу автобуса через селект у списку
     $(document).on('change', '.js-vehicle-status-select', function (e) {
         e.preventDefault();
         const $select = $(this);
@@ -93,7 +89,7 @@
 
         $select.prop('disabled', true);
 
-        Api.updateStatus(vehicleId, nextStatus)
+        api.updateStatus(vehicleId, nextStatus)
             .done(() => {
                 const $indicator = $select.closest('.vehicle-item').find('.status-indicator');
                 $indicator.attr('class', `status-indicator status-${nextStatus}`);
@@ -125,7 +121,6 @@
             });
     });
 
-    // Функція відкриття модального вікна додавання ТЗ
     function openAddVehicleModal() {
         if (!ModalManager) {
             console.error('Global Modal manager library initialization instances not found.');
@@ -133,7 +128,7 @@
         }
 
         ModalManager.open('Новий транспортний засіб', '#tpl-add-vehicle', {
-            ...Validator.vehicleFormRules,
+            ...validator.vehicleFormRules,
             showErrors: function (errorMap, errorList) {
                 this.defaultShowErrors();
 

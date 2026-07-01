@@ -1,4 +1,8 @@
-﻿$(function () {
+﻿import api from './stopSidebarApi.js';
+import validator from './stopSidebarValidator.js';
+import ModalManager from '../../../../helpers/ModalManager.js';
+
+$(function () {
     'use strict';
 
     let debounceTimer = null;
@@ -6,18 +10,14 @@
     let temporaryCoords = null;
 
     const getMap = () => window.TransitMapInstance;
-    const Api = window.StopSidebarApi;
-    const Validator = window.StopSidebarValidator;
-    const ModalManager = window.Modal;
 
-    // Видалення зупинки
     $(document).on('click', '.btn-delete-stop', function (e) {
         e.stopPropagation();
         const stopId = $(this).closest('.stop-item').data('id');
 
         if (!confirm('Видалити зупинку?')) return;
 
-        Api.deleteStop(stopId)
+        api.deleteStop(stopId)
             .done(() => {
                 window.location.reload();
             })
@@ -34,7 +34,6 @@
             });
     });
 
-    // Редагування назви (відкриття інпуту)
     $(document).on('click', '.btn-edit-stop', function (e) {
         e.stopPropagation();
         const $item = $(this).closest('.stop-item');
@@ -43,13 +42,11 @@
         $item.addClass('is-editing');
     });
 
-    // Закриття редагування назви
     $(document).on('click', '.btn-edit-close', function (e) {
         e.stopPropagation();
         $(this).closest('.stop-item').removeClass('is-editing');
     });
 
-    // Підтвердження зміни назви
     $(document).on('click', '.btn-edit-accept', function (e) {
         e.stopPropagation();
         const $item = $(this).closest('.stop-item');
@@ -74,7 +71,7 @@
             longitude: parseFloat(lonRaw.replace(',', '.'))
         };
 
-        Api.updateStop(stopId, updateData)
+        api.updateStop(stopId, updateData)
             .done(() => {
                 $item.find('.stop-name b').text(newName);
                 $item.removeClass('is-editing');
@@ -96,7 +93,6 @@
             });
     });
 
-    // Обробка клавіш в інпуті редагування
     $(document).on('keydown', '.edit-input', function (e) {
         if (e.key === 'Enter') {
             e.preventDefault();
@@ -107,7 +103,6 @@
         }
     });
 
-    // Клік на елемент зупинки для фокусування на карті
     $(document).on('click', '.stop-item', function (e) {
         if ($(this).hasClass('is-editing') || $(e.target).closest('.stop-actions, .editing-container').length) {
             return;
@@ -127,7 +122,6 @@
         }
     });
 
-    // Функція відкриття модального вікна додавання зупинки
     function openAddStopModal() {
         if (!ModalManager) {
             console.error('Global Modal manager library instance not found.');
@@ -135,7 +129,7 @@
         }
 
         ModalManager.open('Нова зупинка', '#tpl-add-stop', {
-            ...Validator.stopFormRules,
+            ...validator.stopFormRules,
             showErrors: function (errorMap, errorList) {
                 this.defaultShowErrors();
 
@@ -149,7 +143,7 @@
                 }
             },
             submitHandler: (form) => {
-                const $form = $(form)
+                const $form = $(form);
 
                 const stopData = {
                     name: $form.find('#stop-name').val(),
@@ -161,7 +155,7 @@
                 const $submitBtn = $form.find('#btn-submit-stop');
                 $submitBtn.prop('disabled', true).addClass('loading');
 
-                Api.createStop(stopData)
+                api.createStop(stopData)
                     .done(() => {
                         savedStopState = null;
                         window.location.reload();
@@ -186,8 +180,6 @@
         const $searchIcon = $modalBody.find('.search-icon');
         const $spinnerIcon = $modalBody.find('.spinner-icon');
 
-
-        // 4. Відновлення раніше збереженого стану (якщо повертаємось із карти)
         if (savedStopState) {
             $modalBody.find('#stop-name').val(savedStopState.name);
             $modalBody.find('#stop-type').val(savedStopState.type);
@@ -196,7 +188,6 @@
             if (savedStopState.longitude) $modalBody.find('#stop-lon').val(savedStopState.longitude);
         }
 
-        // 5. Логіка автокомпліту адрес (Nominatim OpenStreetMap API)
         function fetchSuggestions(query) {
             if (!query.trim()) {
                 $suggestions.addClass('hidden').empty();
@@ -238,7 +229,6 @@
 
                             $suggestions.addClass('hidden').empty();
 
-                            // Запускаємо перевірку форми після автоматичного заповнення координат
                             $submitBtn.prop('disabled', !$form.valid());
                         });
 
@@ -251,7 +241,6 @@
             });
         }
 
-        // Пошук з дебаунсом при введенні тексту
         $modalBody.on('input', '#address-search', function () {
             const val = $(this).val();
             clearTimeout(debounceTimer);
@@ -263,13 +252,11 @@
             }
         });
 
-        // Пошук по кліку на іконку/кнопку тригера
         $modalBody.on('click', '#btn-search-trigger', function () {
             clearTimeout(debounceTimer);
             fetchSuggestions($modalBody.find('#address-search').val());
         });
 
-        // Кнопка "Обрати на карті"
         $modalBody.on('click', '#btn-pick-on-map', function () {
             savedStopState = {
                 name: $modalBody.find('#stop-name').val(),
@@ -295,7 +282,6 @@
         });
     }
 
-    // Підтвердження координат з банера карти
     $('#btn-banner-confirm').on('click', function () {
         if (!savedStopState) return;
 
@@ -311,7 +297,6 @@
         openAddStopModal();
     });
 
-    // Скасування вибору координат на карті
     $('#btn-banner-cancel').on('click', function () {
         if (!savedStopState) return;
 
@@ -324,7 +309,6 @@
         openAddStopModal();
     });
 
-    // Кнопка відкриття модалки додавання зупинки
     $('#open-modal-btn').on('click', function () {
         savedStopState = null;
         temporaryCoords = null;

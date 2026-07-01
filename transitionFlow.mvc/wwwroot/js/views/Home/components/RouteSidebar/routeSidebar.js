@@ -1,21 +1,19 @@
-﻿$(function () {
+﻿import api from './routeSidebarApi.js';
+import validator from './routeSidebarValidator.js';
+import ModalManager from '../../../../helpers/ModalManager.js';
+
+$(function () {
     'use strict';
 
     let debounceTimer = null;
     let savedRouteState = null;
 
-    const api = window.RouteSidebarApi;
-    const validator = window.RouteSidebarValidator;
-    const ModalManager = window.Modal;
-
-    // Ініціалізація кастомних правил валідації
     if (validator && typeof validator.initRouteCustomRules === "function") {
         validator.initRouteCustomRules();
     }
 
     const getMap = () => window.TransitMapInstance;
 
-    // Видалення маршруту
     $(document).on('click', '.btn-delete-route', function (e) {
         e.stopPropagation();
         const routeId = $(this).closest('.route-item').data('id');
@@ -38,7 +36,6 @@
             });
     });
 
-    // Клік на маршрут для фокусування на карті
     $(document).on('click', '.route-item', function (e) {
         if ($(this).hasClass('is-editing') || $(e.target).closest('.route-actions').length) {
             return;
@@ -50,7 +47,6 @@
         }
     });
 
-    // Кнопка відкриття модалки
     $(document).on('click', '#open-route-modal-btn', function () {
         openAddRouteModal();
     });
@@ -69,7 +65,6 @@
                 const $form = $(this.currentForm);
                 const $submitBtn = $form.find('#btn-submit-route');
 
-                // Якщо є помилки валідації, блокуємо кнопку відправки
                 if (this.numberOfInvalids() > 0) {
                     $submitBtn.prop('disabled', true);
                 } else {
@@ -120,7 +115,6 @@
         const $bucket = $modalBody.find('#available-stops-bucket');
         const $stopsTrigger = $modalBody.find('input[name="selectedStops"]');
 
-        // Відновлення стану форми, якщо повернулися з карти
         if (savedRouteState) {
             $modalBody.find('#route-number').val(savedRouteState.number);
             $modalBody.find('#route-type').val(savedRouteState.type);
@@ -140,10 +134,9 @@
             $modalBody.find('.color-dot').first().addClass('active');
         }
 
-        // Вибір кольору
         $modalBody.on('click', '.color-dot', function () {
             const color = $(this).data('color');
-            $modalBody.find('#selected-route-color').val(color).valid(); // .valid() тригерить перевірку
+            $modalBody.find('#selected-route-color').val(color).valid();
             $(this).addClass('active').siblings().removeClass('active');
         });
 
@@ -191,7 +184,6 @@
             }
         }
 
-        // Змушує валідатор перевірити список зупинок при додаванні/видаленні
         function triggerStopsValidation() {
             if ($stopsTrigger.length) {
                 const count = $selectedList.find('.selected-stop-item').length;
@@ -204,7 +196,6 @@
             ModalManager.close();
         });
 
-        // Вибір зупинок на карті
         $modalBody.on('click', '#btn-route-pick-map', function () {
             const stopIds = [];
             $selectedList.find('.selected-stop-item').each(function () {
