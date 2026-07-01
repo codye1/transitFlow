@@ -1,8 +1,11 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using System.Net.Http.Json;
+using TransitFlow.mvc.Models;
+using TransitFlow.mvc.Models.DTO;
 
 namespace TransitFlow.mvc.Controllers
 {
-    public class StopsController : Controller
+    public class StopsController : BaseController
     {
         private readonly IHttpClientFactory _httpClientFactory;
 
@@ -12,15 +15,24 @@ namespace TransitFlow.mvc.Controllers
         }
 
         [HttpPost("/stops")]
-        public async Task<IActionResult> CreateStop([FromBody] object stopData)
+        public async Task<IActionResult> CreateStop([FromBody] StopCreateDto stopData)
         {
             var client = _httpClientFactory.CreateClient("TransitApi");
             var response = await client.PostAsJsonAsync("/stops", stopData);
 
             if (response.IsSuccessStatusCode)
             {
-                var result = await response.Content.ReadFromJsonAsync<object>();
-                return Ok(result);
+                var createdStop = await response.Content.ReadFromJsonAsync<StopModel>();
+                if (createdStop == null)
+                    return BadRequest();
+
+                var itemModel = new StopItemViewModel
+                {
+                    Stop = createdStop,
+                    User = GetUser()
+                };
+
+                return PartialView("~/Views/Home/Components/StopSidebar/Partials/_StopItem.cshtml", itemModel);
             }
             if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized)
                 return Unauthorized();
@@ -50,7 +62,7 @@ namespace TransitFlow.mvc.Controllers
         }
 
         [HttpPut("/stops/{id}")]
-        public async Task<IActionResult> UpdateStop(int id, [FromBody] object stopData)
+        public async Task<IActionResult> UpdateStop(int id, [FromBody] StopUpdateDto stopData)
         {
             var client = _httpClientFactory.CreateClient("TransitApi");
 

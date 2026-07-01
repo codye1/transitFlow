@@ -42,15 +42,13 @@ namespace transitFlow.Controllers
             var result = await _userManager.CreateAsync(user, dto.Password);
             if (!result.Succeeded)
             {
-                var errors = result.Errors.Select(e => new ApiErrorDto(e.Code, e.Description));
-                return BadRequest(errors);
+                return BadRequest(ApiErrors.FromIdentityErrors(result.Errors));
             }
 
             result = await _userManager.AddToRoleAsync(user, "user");
             if (!result.Succeeded)
             {
-                var errors = result.Errors.Select(e => new ApiErrorDto(e.Code, e.Description));
-                return BadRequest(errors);
+                return BadRequest(ApiErrors.FromIdentityErrors(result.Errors));
             }
 
             return Ok("User registered!");
@@ -62,13 +60,13 @@ namespace transitFlow.Controllers
             var user = await _userManager.FindByEmailAsync(dto.Email);
             if (user == null)
             {
-                return Unauthorized(new List<ApiErrorDto> { new ApiErrorDto("InvalidCredentials", "Invalid email or password.") });
+                return Unauthorized(ApiErrors.Single("InvalidCredentials", "Invalid email or password."));
             }
 
             var passwordValid = await _userManager.CheckPasswordAsync(user, dto.Password);
             if (!passwordValid)
             {
-                return Unauthorized(new List<ApiErrorDto> { new ApiErrorDto("InvalidCredentials", "Invalid email or password.") });
+                return Unauthorized(ApiErrors.Single("InvalidCredentials", "Invalid email or password."));
             }
 
             var response = await IssueTokensAsync(user);
@@ -81,14 +79,14 @@ namespace transitFlow.Controllers
             var refreshTokenValue = Request.Cookies["refreshToken"];
             if (string.IsNullOrEmpty(refreshTokenValue))
             {
-                return Unauthorized(new List<ApiErrorDto> { new ApiErrorDto("MissingToken", "No refresh token provided.") });
+                return Unauthorized(ApiErrors.Single("MissingToken", "No refresh token provided."));
             }
 
             var existingToken = await _tokenRepository.GetByTokenAsync(refreshTokenValue);
 
             if (existingToken == null || !existingToken.IsActive)
             {
-                return Unauthorized(new List<ApiErrorDto> { new ApiErrorDto("InvalidToken", "Invalid or expired refresh token.") });
+                return Unauthorized(ApiErrors.Single("InvalidToken", "Invalid or expired refresh token."));
             }
 
             existingToken.RevokedAt = DateTime.UtcNow;

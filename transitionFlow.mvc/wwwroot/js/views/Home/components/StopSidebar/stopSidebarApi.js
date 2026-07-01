@@ -4,7 +4,8 @@
             url: '/stops',
             type: 'POST',
             contentType: 'application/json',
-            data: JSON.stringify(stopData)
+            data: JSON.stringify(stopData),
+            dataType: 'html'
         });
     },
 

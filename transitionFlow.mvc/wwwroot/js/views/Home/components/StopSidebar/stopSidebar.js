@@ -13,13 +13,19 @@ $(function () {
 
     $(document).on('click', '.btn-delete-stop', function (e) {
         e.stopPropagation();
-        const stopId = $(this).closest('.stop-item').data('id');
+        const $item = $(this).closest('.stop-item');
+        const stopId = $item.data('id');
 
         if (!confirm('Видалити зупинку?')) return;
 
         api.deleteStop(stopId)
             .done(() => {
-                window.location.reload();
+                const map = getMap();
+                if (map && typeof map.removeStop === 'function') {
+                    map.removeStop(stopId);
+                }
+
+                $item.remove();
             })
             .fail((xhr) => {
                 if (xhr.status === 401) {
@@ -156,9 +162,31 @@ $(function () {
                 $submitBtn.prop('disabled', true).addClass('loading');
 
                 api.createStop(stopData)
-                    .done(() => {
+                    .done((html) => {
                         savedStopState = null;
-                        window.location.reload();
+
+                        const $newItem = $(html);
+                        $('.stop-list').append($newItem);
+
+                        const map = getMap();
+                        if (map && typeof map.addStop === 'function') {
+                            const stopId = Number($newItem.data('id'));
+                            const latitude = parseFloat(String($newItem.data('lat')).replace(',', '.'));
+                            const longitude = parseFloat(String($newItem.data('lon')).replace(',', '.'));
+
+                            map.addStop({
+                                id: stopId,
+                                name: $newItem.find('.stop-name b').text().trim(),
+                                latitude: latitude,
+                                longitude: longitude
+                            });
+
+                            if (!Number.isNaN(stopId) && !Number.isNaN(latitude) && !Number.isNaN(longitude)) {
+                                map.focusOnPoint(stopId, latitude, longitude, 16);
+                            }
+                        }
+
+                        Modal.close();
                     })
                     .fail((xhr) => {
                         if (xhr.status === 401) {

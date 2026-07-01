@@ -5,6 +5,9 @@
         this.defaultZoom = options.zoom || 14;
         this.map = null;
         this.stopColorMap = {};
+        this.stopsData = [];
+        this.routesData = [];
+        this.vehiclesData = [];
         this._mapClickHandler = null;
         this.pendingMarker = null;
         this.markers = {};
@@ -50,6 +53,10 @@
         if (this.animationInterval) {
             clearInterval(this.animationInterval);
         }
+
+        this.vehiclesData = Array.isArray(vehicles) ? [...vehicles] : [];
+        this.routesData = Array.isArray(routes) ? [...routes] : [];
+        this.stopsData = Array.isArray(stops) ? [...stops] : [];
 
         const onRouteVehicles = vehicles.filter(v => v.status === "OnRoute" && v.routeId);
 
@@ -145,26 +152,77 @@
     renderStops(stops, routes = []) {
         if (!this.map) return;
 
+        Object.values(this.markers).forEach(marker => {
+            this.map.removeLayer(marker);
+        });
+
+        this.stopsData = Array.isArray(stops) ? [...stops] : [];
+        this.routesData = Array.isArray(routes) ? [...routes] : [];
         this.mapRouteColors(routes);
         this.markers = {};
 
         $.each(stops, (index, stop) => {
-            const markerColor = this.stopColorMap[stop.id] || '#6B7280';
-            const typeLabel = stop.type === 'combined' ? 'Комбінована' : 'Стандартна';
+            this.addStop(stop);
+        });
+    }
 
-            const marker = L.marker([stop.latitude, stop.longitude], {
-                icon: this.createStopIcon(markerColor)
-            })
-                .bindPopup(`
+    addStop(stop) {
+        if (!this.map || !stop) return null;
+
+        const stopId = Number(stop.id ?? stop.Id);
+        const latitude = Number(stop.latitude ?? stop.Latitude);
+        const longitude = Number(stop.longitude ?? stop.Longitude);
+        const stopName = stop.name ?? stop.Name ?? '';
+
+        if (Number.isNaN(stopId) || Number.isNaN(latitude) || Number.isNaN(longitude)) {
+            return null;
+        }
+
+        const markerColor = this.stopColorMap[stopId] || '#6B7280';
+        const typeLabel = stop.type === 'combined' || stop.Type === 'combined' ? 'Комбінована' : 'Стандартна';
+
+        if (this.markers[stopId]) {
+            this.map.removeLayer(this.markers[stopId]);
+        }
+
+        const marker = L.marker([latitude, longitude], {
+            icon: this.createStopIcon(markerColor)
+        })
+            .bindPopup(`
                 <div style="font-family: var(--font-body); font-size: 14px;">
-                    <div class="popup-stop-name" style="font-weight: bold; color: var(--color-text);">${stop.name}</div>
+                    <div class="popup-stop-name" style="font-weight: bold; color: var(--color-text);">${stopName}</div>
                     <div style="color: var(--color-muted); font-size: 12px; margin-top:2px;">${typeLabel} зупинка</div>
                 </div>
             `)
-                .addTo(this.map);
+            .addTo(this.map);
 
-            this.markers[stop.id] = marker;
+        this.markers[stopId] = marker;
+        this.stopsData.push({
+            id: stopId,
+            name: stopName,
+            latitude,
+            longitude
         });
+
+        return marker;
+    }
+
+    removeStop(stopId) {
+        if (!this.map) return;
+
+        const numericStopId = Number(stopId);
+        const marker = this.markers[numericStopId];
+
+        if (marker) {
+            this.map.removeLayer(marker);
+            delete this.markers[numericStopId];
+        }
+
+        this.stopsData = this.stopsData.filter(stop => Number(stop.id ?? stop.Id) !== numericStopId);
+
+        if (Array.isArray(this.routesData) && this.routesData.length > 0) {
+            void this.renderRoutes(this.routesData, this.stopsData);
+        }
     }
 
     async fetchOSRMRoute(coords) {
@@ -431,6 +489,88 @@
             marker.openPopup();
         } else {
             console.warn(`Vehicle marker with ID ${vehicleId} not found or not active on the map.`);
+        }
+    }
+
+    addVehicle(vehicle) {
+        if (!vehicle) return null;
+
+        const normalizedVehicle = {
+            ...vehicle,
+            id: Number(vehicle.id ?? vehicle.Id),
+            routeId: vehicle.routeId ?? vehicle.RouteId ?? null,
+            status: vehicle.status ?? vehicle.Status ?? ''
+        };
+
+        if (Number.isNaN(normalizedVehicle.id)) {
+            return null;
+        }
+
+        const existingIndex = this.vehiclesData.findIndex(item => Number(item.id ?? item.Id) === normalizedVehicle.id);
+        if (existingIndex >= 0) {
+            this.vehiclesData[existingIndex] = normalizedVehicle;
+        } else {
+            this.vehiclesData.push(normalizedVehicle);
+        }
+
+        this.renderAndAnimateVehicles(this.vehiclesData, this.routesData, this.stopsData);
+        return normalizedVehicle;
+    }
+
+    removeVehicle(vehicleId) {
+        const numericVehicleId = Number(vehicleId);
+        this.vehiclesData = this.vehiclesData.filter(item => Number(item.id ?? item.Id) !== numericVehicleId);
+
+        if (!this.map) return;
+
+        if (this.vehicleMarkers[numericVehicleId]) {
+            this.map.removeLayer(this.vehicleMarkers[numericVehicleId]);
+            delete this.vehicleMarkers[numericVehicleId];
+            delete this.vehicleProgress[numericVehicleId];
+        }
+
+        this.renderAndAnimateVehicles(this.vehiclesData, this.routesData, this.stopsData);
+    }
+
+    async addRoute(routeId, stopIds, color) {
+        if (!this.map || !stopIds || stopIds.length < 2) return;
+
+        if (this.routeLines[routeId]) {
+            this.map.removeLayer(this.routeLines[routeId]);
+            delete this.routeLines[routeId];
+        }
+
+        const stopCoords = [];
+        for (const stopId of stopIds) {
+            const marker = this.markers[stopId];
+            if (marker) {
+                const latlng = marker.getLatLng();
+                stopCoords.push([latlng.lat, latlng.lng]);
+            }
+        }
+
+        if (stopCoords.length < 2) return;
+
+        let pathPoints = await this.fetchOSRMRoute(stopCoords);
+        if (!pathPoints) {
+            pathPoints = stopCoords;
+        }
+
+        const polyline = L.polyline(pathPoints, {
+            color: color || '#3B82F6',
+            weight: 4,
+            opacity: 0.85
+        }).addTo(this.map);
+
+        this.routeLines[routeId] = polyline;
+    }
+
+    deleteRoute(routeId) {
+        if (!this.map) return;
+
+        if (this.routeLines[routeId]) {
+            this.map.removeLayer(this.routeLines[routeId]);
+            delete this.routeLines[routeId];
         }
     }
 }

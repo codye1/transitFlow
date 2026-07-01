@@ -1,0 +1,63 @@
+@model VehicleItemViewModel
+@{
+    var currentRoute = Model.Routes.FirstOrDefault(r => r.Id == Model.Vehicle.RouteId);
+    var canManage = Model.User != null &&
+        (Model.Vehicle.CreatedById == Model.User.Id ||
+         Model.User.Roles.Contains(AppRole.Admin) ||
+         Model.User.Roles.Contains(AppRole.Moderator));
+
+    var routeIdValue = Model.Vehicle.RouteId.HasValue ? Model.Vehicle.RouteId.Value.ToString() : string.Empty;
+}
+<li class="vehicle-item group"
+    data-id="@Model.Vehicle.Id"
+    data-route-id="@routeIdValue"
+    data-status="@Model.Vehicle.Status"
+    data-type="@Model.Vehicle.Type"
+    data-plate-number="@Model.Vehicle.PlateNumber"
+    data-model="@Model.Vehicle.Model"
+    data-capacity="@Model.Vehicle.Capacity"
+    data-created-by-id="@Model.Vehicle.CreatedById">
+    <div class="vehicle-main-info">
+        <div class="vehicle-meta">
+            <div class="status-indicator status-@Model.Vehicle.Status"></div>
+            <span class="vehicle-plate">@Model.Vehicle.PlateNumber</span>
+            <span class="vehicle-badge">@Model.Vehicle.TypeDescription</span>
+        </div>
+        <div class="vehicle-subtext">@Model.Vehicle.Model · @Model.Vehicle.Capacity пас.</div>
+
+        @if (currentRoute != null)
+        {
+            <div class="vehicle-route-info">Маршрут №@currentRoute.Number</div>
+        }
+    </div>
+
+    <div class="vehicle-inline-controls">
+        <select class="form-input input-sm js-vehicle-route-select" data-id="@Model.Vehicle.Id">
+            <option value="">— Без маршруту</option>
+            @foreach (var route in Model.Routes)
+            {
+                <!option value="@route.Id" @(route.Id == Model.Vehicle.RouteId ? "selected" : "")>
+                №@route.Number — @route.Name
+                </!option>
+            }
+        </select>
+
+        <select class="form-input input-sm js-vehicle-status-select" data-id="@Model.Vehicle.Id">
+            @foreach (var status in Model.AvailableStatuses)
+            {
+                <!option value="@status.Key" @(status.Key == Model.Vehicle.Status ? "selected" : "")>
+                @status.Value
+                </!option>
+            }
+        </select>
+
+        @if (canManage)
+        {
+            <div class="vehicle-actions">
+                <button class="icon-btn btn-delete-vehicle" title="Видалити">
+                    <img src="~/images/icons/delete.svg" alt="DeleteIcon" />
+                </button>
+            </div>
+        }
+    </div>
+</li>

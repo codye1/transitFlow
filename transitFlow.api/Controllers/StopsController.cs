@@ -13,7 +13,7 @@ namespace transitFlow.api.Controllers
     public class StopsController : ControllerBase
     {
         private readonly IStopRepository _stopRepository;
-                                                                                                             
+
         public StopsController(IStopRepository stopRepository)
         {
             _stopRepository = stopRepository;
@@ -58,11 +58,11 @@ namespace transitFlow.api.Controllers
             var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
             if (string.IsNullOrEmpty(userIdClaim) || !int.TryParse(userIdClaim, out int userId))
             {
-                return Unauthorized("User ID not found in token.");
+                return Unauthorized(ApiErrors.Single("Unauthorized", "User ID not found in token."));
             }
 
             var stop = new Stop
-            {                                                                                                                                                                       
+            {
                 Name = dto.Name,
                 Latitude = dto.Latitude,
                 Longitude = dto.Longitude,
@@ -78,6 +78,7 @@ namespace transitFlow.api.Controllers
                 Name = stop.Name,
                 Latitude = stop.Latitude,
                 Longitude = stop.Longitude,
+                CreatedById = stop.CreatedById,
                 CreatedAt = stop.CreatedAt,
             };
 
@@ -90,16 +91,16 @@ namespace transitFlow.api.Controllers
         {
             var stop = await _stopRepository.GetByIdAsync(id);
             if (stop == null)
-                return NotFound($"Stop with ID {id} not found.");
+                return NotFound(ApiErrors.Single("NotFound", $"Stop with ID {id} not found."));
 
             var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
             if (string.IsNullOrEmpty(userIdClaim) || !int.TryParse(userIdClaim, out int userId))
-                return Unauthorized("User ID not found in token.");
+                return Unauthorized(ApiErrors.Single("Unauthorized", "User ID not found in token."));
 
             bool isAdminOrModerator = User.IsInRole("admin") || User.IsInRole("moderator");
 
             if (!isAdminOrModerator && stop.CreatedById != userId)
-                return Forbid();
+                return StatusCode(StatusCodes.Status403Forbidden, ApiErrors.Single("Forbidden", "You do not have permission to delete this stop."));
 
             await _stopRepository.DeleteAsync(stop);
 
@@ -112,15 +113,15 @@ namespace transitFlow.api.Controllers
         {
             var stop = await _stopRepository.GetByIdAsync(id);
             if (stop == null)
-                return NotFound($"Stop with ID {id} not found.");
+                return NotFound(ApiErrors.Single("NotFound", $"Stop with ID {id} not found."));
 
             var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
             if (string.IsNullOrEmpty(userIdClaim) || !int.TryParse(userIdClaim, out int userId))
-                return Unauthorized("User ID not found in token.");
+                return Unauthorized(ApiErrors.Single("Unauthorized", "User ID not found in token."));
 
             bool isAdminOrModerator = User.IsInRole("admin") || User.IsInRole("moderator");
             if (!isAdminOrModerator && stop.CreatedById != userId)
-                return Forbid();
+                return StatusCode(StatusCodes.Status403Forbidden, ApiErrors.Single("Forbidden", "You do not have permission to update this stop."));
 
             stop.Name = dto.Name;
             stop.Latitude = dto.Latitude;

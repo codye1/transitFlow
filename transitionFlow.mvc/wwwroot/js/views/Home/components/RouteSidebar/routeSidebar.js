@@ -16,12 +16,17 @@ $(function () {
 
     $(document).on('click', '.btn-delete-route', function (e) {
         e.stopPropagation();
-        const routeId = $(this).closest('.route-item').data('id');
+        const $routeItem = $(this).closest('.route-item');
+        const routeId = $routeItem.data('id');
         if (!confirm('Видалити маршрут?')) return;
 
         api.deleteRoute(routeId)
             .done(() => {
-                window.location.reload();
+                const map = getMap();
+                if (map && typeof map.deleteRoute === 'function') {
+                    map.deleteRoute(routeId);
+                }
+                $routeItem.remove();
             })
             .fail((xhr) => {
                 if (xhr.status === 401) {
@@ -91,9 +96,24 @@ $(function () {
                 $submitBtn.prop('disabled', true).addClass('loading');
 
                 api.createRoute(routeData)
-                    .done(() => {
+                    .done(async (html) => {
                         savedRouteState = null;
-                        window.location.reload();
+
+                        const $newItem = $(html);   
+                        $('.route-list').append($newItem);
+
+                        const newRouteId = Number($newItem.data('id'));
+                        const newRouteColor = $newItem.attr('data-color');
+                        const newRouteStops = $newItem.data('stops'); 
+                        
+                        const map = getMap();
+                        if (map && typeof map.addRoute === 'function' && Array.isArray(newRouteStops) && newRouteStops.length >= 2) {
+                            await map.addRoute(newRouteId, newRouteStops, newRouteColor);
+                        }
+
+                        Modal.close();
+
+                        map.focusOnRoute(newRouteId);
                     })
                     .fail((xhr) => {
                         if (xhr.status === 401) {
@@ -153,7 +173,6 @@ $(function () {
             `);
 
             $selectedList.append($selectedItem);
-            $btn.parent('#bucket-item').addClass('hidden');
 
             updateOrderIndexes();
             triggerStopsValidation();
@@ -165,8 +184,8 @@ $(function () {
 
         $modalBody.on('click', '.btn-remove-selected-stop', function () {
             const $item = $(this).closest('.selected-stop-item');
-            const stopId = $item.data('id' || $item.data('stop-id'));
-            $bucket.find(`.bucket-item-btn[data-stop-id="${stopId}"]`).parent('#bucket-item').removeClass('hidden');
+            const stopId = $item.data('stop-id');
+            $bucket.find(`.bucket-item-btn[data-stop-id="${stopId}"]`).parent('.bucket-item').removeClass('hidden');
             $item.remove();
             updateOrderIndexes();
             triggerStopsValidation();
