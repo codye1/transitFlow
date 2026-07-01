@@ -5,11 +5,8 @@
     AssetManager.RegisterStyle("/css/views/Home/components/RouteSidebar/route-sidebar.css");
 
     AssetManager.RegisterScript("/lib/jquery-validation/dist/jquery.validate.min.js");
-    
-    AssetManager.RegisterScript("/js/views/Home/components/RouteSidebar/routeSidebarApi.js");
-    AssetManager.RegisterScript("/js/views/Home/components/RouteSidebar/routeSidebarValidator.js");
-    
-    AssetManager.RegisterScript("/js/views/Home/components/RouteSidebar/routeSidebar.js");
+        
+    AssetManager.RegisterScript("/js/views/Home/components/RouteSidebar/routeSidebar.js", isModule:true);
 }
 
 <aside class="sidebar">
@@ -18,7 +15,7 @@
         <button class="btn-primary" id="open-route-modal-btn">Додати</button>
     </div>
 
-    <div class="route-list">
+    <ul class="route-list">
         @if (!Model.Routes.Any())
         {
             <p>Маршрутів ще немає</p>
@@ -26,7 +23,7 @@
 
         @foreach (var route in Model.Routes)
         {
-            <div class="route-item" data-id="@route.Id">
+            <li class="route-item" data-id="@route.Id">
                 <div class="route-color-indicator" style="background-color: @(string.IsNullOrEmpty(route.Color) ? "#3b82f6" : route.Color)"></div>
 
                 <div class="route-info">
@@ -43,9 +40,9 @@
                         <button class="icon-btn btn-delete-route" title="Видалити"><img src="~/images/icons/delete.svg" alt="DeleteIcon" /></button>
                     </div>
                 }
-            </div>
+            </li>
         }
-    </div>
+    </ul>
 
     <template id="tpl-add-route">
         <form id="form-add-route" class="modal-form-layout">
@@ -86,21 +83,25 @@
 
             <div class="form-group">
                 <label class="form-label">Зупинки (у порядку маршруту)</label>
-                <div id="selected-stops-list" class="selected-stops-container">
-                </div>
+                <ul id="selected-stops-list" class="selected-stops-container">
+                </ul>
+                <input type="text" id="selected-stops-validator" name="selectedStops" value="1" data-stops-list-target="#selected-stops-list" style="position: absolute; opacity: 0; width: 1px; height: 1px; pointer-events: none;" />
 
-                <div class="stops-bucket-selector" id="available-stops-bucket">
+                
+                <ul class="stops-bucket-selector" id="available-stops-bucket">
     @foreach (var stop in Model.AllStops)
     {
+        <li id="bucket-item">
         <button type="button" class="bucket-item-btn" 
                 data-stop-id="@stop.Id" 
                 data-lat="@stop.Latitude.ToString(System.Globalization.CultureInfo.InvariantCulture)" 
                 data-lon="@stop.Longitude.ToString(System.Globalization.CultureInfo.InvariantCulture)">
             <img class="icon" src="~/images/icons/add.svg" alt="AddIcon" /> @stop.Name
         </button>
+                        </li>
     }
     <div class="bucket-empty-state hidden" id="bucket-empty-msg">Всі зупинки додано</div>
-</div>
+</ul>
 
                 <button type="button" id="btn-route-pick-map" class="btn-outline-map" style="margin-top: 10px;">
                     📍 Обрати зупинки на карті

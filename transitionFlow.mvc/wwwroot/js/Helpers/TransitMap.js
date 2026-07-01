@@ -8,8 +8,13 @@
         this._mapClickHandler = null;
         this.pendingMarker = null;
         this.markers = {};
-        this.routeLines = {}; 
+        this.routeLines = {};
         this.previewPolyline = null;
+
+        this.vehicleMarkers = {};
+        this.vehicleProgress = {};
+        this.animationInterval = null;
+
         this.init();
     }
 
@@ -21,6 +26,100 @@
         L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
             attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
         }).addTo(this.map);
+    }
+
+    createVehicleIcon(color, type) {
+        const emoji = type === "Rram" ? "🚋" : type === "trolleybus" ? "🚎" : type === "minibus" ? "🚐" : "🚌";
+        return L.divIcon({
+            className: "",
+            html: `<div style="background:${color};color:white;border-radius:50%;width:32px;height:32px;display:flex;align-items:center;justify-content:center;font-size:16px;box-shadow:0 3px 8px rgba(0,0,0,0.35);border:2px solid white;">${emoji}</div>`,
+            iconSize: [32, 32],
+            iconAnchor: [16, 16],
+        });
+    }
+
+    interpolatePoints(p1, p2, t) {
+        return [
+            p1[0] + (p2[0] - p1[0]) * t,
+            p1[1] + (p2[1] - p1[1]) * t
+        ];
+    }
+    renderAndAnimateVehicles(vehicles, routes, stops) {
+        if (!this.map) return;
+
+        if (this.animationInterval) {
+            clearInterval(this.animationInterval);
+        }
+
+        const onRouteVehicles = vehicles.filter(v => v.status === "OnRoute" && v.routeId);
+
+
+        onRouteVehicles.forEach(v => {
+            if (this.vehicleProgress[v.id] === undefined) {
+                this.vehicleProgress[v.id] = Math.random() * 0.9;
+            }
+        });
+
+        this.animationInterval = setInterval(() => {
+            onRouteVehicles.forEach(v => {
+                const route = routes.find(r => r.id === v.routeId);
+
+                if (!route || !route.stops || route.stops.length < 2) return;
+                let points = [];
+                const polylineLayer = this.routeLines[v.routeId];
+
+                if (polylineLayer) {
+                    points = polylineLayer.getLatLngs().map(latlng => [latlng.lat, latlng.lng]);
+                } else {
+                    points = route.stops
+                        .map(sid => stops.find(s => s.id === sid))
+                        .filter(Boolean)
+                        .map(s => [s.latitude, s.longitude]);
+                }
+                if (points.length < 2) return;
+
+                let progress = this.vehicleProgress[v.id] || 0;
+                progress += 0.001 + Math.random() * 0.001;
+                if (progress > 1) progress = 0;
+                this.vehicleProgress[v.id] = progress;
+
+                const totalSegments = points.length - 1;
+                const segProgress = progress * totalSegments;
+                const segIdx = Math.min(Math.floor(segProgress), totalSegments - 1);
+                const t = segProgress - segIdx;
+
+                const currentPos = this.interpolatePoints(points[segIdx], points[segIdx + 1], t);
+                const routeColor = route.color || "#3B82F6";
+
+                if (this.vehicleMarkers[v.id]) {
+                    this.vehicleMarkers[v.id].setLatLng(currentPos);
+                } else {
+                    const typeLabel = v.type === "tram" ? "Трамвай" : v.type === "trolleybus" ? "Тролейбус" : "Автобус";
+
+                    const marker = L.marker(currentPos, {
+                        icon: this.createVehicleIcon(routeColor, v.type)
+                    }).bindPopup(`
+                        <div style="font-family: var(--font-body); font-size: 14px;">
+                            <div style="font-weight: bold;">${v.plateNumber}</div>
+                            <div style="font-size: 12px; color: #6B7280;">${typeLabel} · ${v.model}</div>
+                            <div style="font-size: 12px; margin-top: 2px;">Маршрут №${route.number}</div>
+                        </div>
+                    `).addTo(this.map);
+
+                    this.vehicleMarkers[v.id] = marker;
+                }
+            });
+
+            const activeIds = onRouteVehicles.map(v => v.id);
+            Object.keys(this.vehicleMarkers).forEach(id => {
+                if (!activeIds.includes(Number(id))) {
+                    this.map.removeLayer(this.vehicleMarkers[id]);
+                    delete this.vehicleMarkers[id];
+                    delete this.vehicleProgress[id];
+                }
+            });
+
+        }, 100);
     }
 
     createStopIcon(color) {
@@ -85,7 +184,7 @@
         } catch (error) {
             console.error("Failed to fetch road path from OSRM:", error);
         }
-        return null; 
+        return null;
     }
 
     async renderRoutes(routes, stops) {
@@ -180,7 +279,6 @@
         this._allStops = allStops;
         this._selectedStopIds = [...currentStopIds];
 
-        // Зберігаємо початкові іконки маркерів, щоб повернути їх назад потім
         this._originalIcons = {};
 
         this.updatePreviewRoute();
@@ -193,12 +291,10 @@
                 marker.unbindPopup();
             }
 
-            // Зберігаємо оригінальну іконку маркера
             this._originalIcons[numericId] = marker.options.icon;
 
-            // Якщо маркер вже був обраний до переходу на карту — підсвічуємо його відразу
             if (this._selectedStopIds.includes(numericId)) {
-                marker.setIcon(this.createHighlightIcon('#10B981')); // зелений активний колір
+                marker.setIcon(this.createHighlightIcon('#10B981'));
             }
 
             marker._routeSelectHandler = async (e) => {
@@ -206,10 +302,9 @@
 
                 if (!this._selectedStopIds.includes(numericId)) {
                     this._selectedStopIds.push(numericId);
-                    marker.setIcon(this.createHighlightIcon('#10B981')); // Підсвічуємо при виборі
+                    marker.setIcon(this.createHighlightIcon('#10B981'));
                 } else {
                     this._selectedStopIds = this._selectedStopIds.filter(id => id !== numericId);
-                    // Повертаємо дефолтну іконку
                     marker.setIcon(this._originalIcons[numericId]);
                 }
 
@@ -224,7 +319,6 @@
         });
     }
 
-    // Допоміжний метод для створення підсвіченої іконки (більший розмір + ефект пульсації/обводки)
     createHighlightIcon(color) {
         return L.divIcon({
             className: '',
@@ -258,10 +352,10 @@
         }
 
         this.previewPolyline = L.polyline(pathPoints, {
-            color: '#10B981', 
+            color: '#10B981',
             weight: 5,
             opacity: 0.75,
-            dashArray: '10, 10' 
+            dashArray: '10, 10'
         }).addTo(this.map);
     }
 
@@ -279,7 +373,6 @@
                 delete marker._savedPopup;
             }
 
-            // Відновлюємо початковий вигляд усіх маркерів
             if (this._originalIcons && this._originalIcons[numericId]) {
                 marker.setIcon(this._originalIcons[numericId]);
             }
@@ -318,10 +411,26 @@
             this.map.flyToBounds(bounds, {
                 animate: true,
                 duration: 1.2,
-                padding: [50, 50] 
+                padding: [50, 50]
             });
         } else {
             console.warn(`Route line with ID ${routeId} not found on the map.`);
+        }
+    }
+
+    focusOnVehicle(vehicleId, zoom = 16) {
+        if (!this.map) return;
+
+        const marker = this.vehicleMarkers[vehicleId];
+        if (marker) {
+            const latlng = marker.getLatLng();
+            this.map.flyTo(latlng, zoom, {
+                animate: true,
+                duration: 1.2
+            });
+            marker.openPopup();
+        } else {
+            console.warn(`Vehicle marker with ID ${vehicleId} not found or not active on the map.`);
         }
     }
 }

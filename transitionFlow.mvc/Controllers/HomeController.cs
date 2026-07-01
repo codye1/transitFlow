@@ -23,11 +23,13 @@ public class HomeController : Controller
 
         var stopsTask = _httpClient.GetAsync("stops?take=100");
         var routesTask = _httpClient.GetAsync("routes?take=100");
+        var vehiclesTask = _httpClient.GetAsync("vehicles?take=100");
 
-        await Task.WhenAll(stopsTask, routesTask);
+        await Task.WhenAll(stopsTask, routesTask, vehiclesTask);
 
         var stopsResponse = await stopsTask;
         var routesResponse = await routesTask;
+        var vehiclesResponse = await vehiclesTask;
 
         List<StopModel> stops = new();
         if (stopsResponse.IsSuccessStatusCode)
@@ -45,11 +47,19 @@ public class HomeController : Controller
             routes = result?.Data ?? new();
         }
 
+        List<VehicleModel> vehicles = new();
+        if (vehiclesResponse.IsSuccessStatusCode)
+        {
+            var json = await vehiclesResponse.Content.ReadAsStringAsync();
+            var result = JsonSerializer.Deserialize<PagedResponseDto<VehicleModel>>(json, jsonOptions);
+            vehicles = result?.Data ?? new();
+        }
+
         var model = new HomeViewModel
         {
             Stops = stops,
             Routes = routes,
-            Vehicles = new List<VehicleModel>(),
+            Vehicles = vehicles,
             User = GetUser()
         };
 

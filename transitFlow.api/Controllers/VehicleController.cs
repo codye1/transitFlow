@@ -47,7 +47,8 @@ namespace transitFlow.api.Controllers
                 RouteId = v.RouteId,
                 Capacity = v.Capacity,
                 CreatedAt = v.CreatedAt,
-                CreatedById = v.CreatedById
+                CreatedById = v.CreatedById,
+                Status=v.Status
             }).ToList();
 
             return Ok(new
@@ -138,25 +139,29 @@ namespace transitFlow.api.Controllers
             var vehicle = await _vehicleRepository.GetVehicleByIdAsync(id);
             if (vehicle == null) return NotFound($"Vehicle with ID {id} not found.");
 
-            bool isUpdated = false;
+            bool hasChanges = false;
 
-            if (dto.RouteId != vehicle.RouteId)
+            if (dto.RouteId.HasValue)
             {
-                vehicle.RouteId = dto.RouteId;
-                isUpdated = true;
+                vehicle.RouteId = dto.RouteId.Value;
+                hasChanges = true;
             }
-                
+
             if (dto.Status.HasValue)
             {
                 vehicle.Status = dto.Status.Value;
-                isUpdated = true;
+                hasChanges = true;
             }
 
-            if (!isUpdated) return Ok(MapToResponseDto(vehicle));
+            if (!hasChanges)
+            {
+                _logger.LogWarning("No trackable changes detected in payload.");
+                return Ok(MapToResponseDto(vehicle));
+            }
 
-            var result = await _vehicleRepository.UpdateVehicleAsync(vehicle);
-            if (!result) return StatusCode(500, "An error occurred while updating the vehicle.");
+            await _vehicleRepository.UpdateVehicleAsync(vehicle);
 
+            _logger.LogInformation("Vehicle {Id} updated successfully.", id);
             return Ok(MapToResponseDto(vehicle));
         }
 

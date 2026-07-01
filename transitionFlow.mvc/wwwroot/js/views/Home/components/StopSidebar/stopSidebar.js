@@ -1,22 +1,23 @@
-﻿$(function () {
+﻿import api from './stopSidebarApi.js';
+import validator from './stopSidebarValidator.js';
+import Modal from '../../../../helpers/ModalManager.js';
+
+$(function () {
+    'use strict';
+
     let debounceTimer = null;
     let savedStopState = null;
     let temporaryCoords = null;
 
     const getMap = () => window.TransitMapInstance;
 
-    // Отримуємо наші модулі з глобального вікна
-    const Api = window.StopSidebarApi;
-    const Validator = window.StopSidebarValidator;
-
-    // === 1. ВИДАЛЕННЯ ЗУПИНКИ ===
     $(document).on('click', '.btn-delete-stop', function (e) {
         e.stopPropagation();
         const stopId = $(this).closest('.stop-item').data('id');
 
         if (!confirm('Видалити зупинку?')) return;
 
-        Api.deleteStop(stopId)
+        api.deleteStop(stopId)
             .done(() => {
                 window.location.reload();
             })
@@ -33,7 +34,6 @@
             });
     });
 
-    // === 2. ІНЛАЙН РЕДАГУВАННЯ НАЗВИ ===
     $(document).on('click', '.btn-edit-stop', function (e) {
         e.stopPropagation();
         const $item = $(this).closest('.stop-item');
@@ -71,7 +71,7 @@
             longitude: parseFloat(lonRaw.replace(',', '.'))
         };
 
-        Api.updateStop(stopId, updateData)
+        api.updateStop(stopId, updateData)
             .done(() => {
                 $item.find('.stop-name b').text(newName);
                 $item.removeClass('is-editing');
@@ -103,7 +103,6 @@
         }
     });
 
-    // === 3. КЛІК НА ЕЛЕМЕНТ СПИСКУ (ФОКУС КАРТИ) ===
     $(document).on('click', '.stop-item', function (e) {
         if ($(this).hasClass('is-editing') || $(e.target).closest('.stop-actions, .editing-container').length) {
             return;
@@ -123,45 +122,59 @@
         }
     });
 
-    // === 4. МОДАЛЬНЕ ВІКНО СТВОРЕННЯ ЗУПИНКИ ===
     function openAddStopModal() {
-        window.Modal.open('Нова зупинка', '#tpl-add-stop', function ($form) {
+        if (!Modal) {
+            console.error('Global Modal manager library instance not found.');
+            return;
+        }
 
-            $form.validate({
-                ...Validator.stopFormRules,
-                submitHandler: function (form, e) {
-                    e.preventDefault();
+        Modal.open('Нова зупинка', '#tpl-add-stop', {
+            ...validator.stopFormRules,
+            showErrors: function (errorMap, errorList) {
+                this.defaultShowErrors();
 
-                    const stopData = {
-                        name: $form.find('#stop-name').val(),
-                        type: $form.find('#stop-type').val(),
-                        latitude: parseFloat($form.find('#stop-lat').val()),
-                        longitude: parseFloat($form.find('#stop-lon').val())
-                    };
+                const $form = $(this.currentForm);
+                const $submitBtn = $form.find('#btn-submit-stop');
 
-                    const $submitBtn = $form.find('#btn-submit-stop');
-                    $submitBtn.prop('disabled', true).addClass('loading');
-
-                    Api.createStop(stopData)
-                        .done(() => {
-                            savedStopState = null;
-                            window.location.reload();
-                        })
-                        .fail((xhr) => {
-                            if (xhr.status === 401) {
-                                window.location.href = '/login';
-                                return;
-                            }
-                            alert('Помилка збереження зупинки');
-                        })
-                        .always(() => {
-                            $submitBtn.prop('disabled', false).removeClass('loading');
-                        });
+                if (this.numberOfInvalids() > 0) {
+                    $submitBtn.prop('disabled', true);
+                } else {
+                    $submitBtn.prop('disabled', false);
                 }
-            });
+            },
+            submitHandler: (form) => {
+                const $form = $(form);
+
+                const stopData = {
+                    name: $form.find('#stop-name').val(),
+                    type: $form.find('#stop-type').val(),
+                    latitude: parseFloat($form.find('#stop-lat').val()),
+                    longitude: parseFloat($form.find('#stop-lon').val())
+                };
+
+                const $submitBtn = $form.find('#btn-submit-stop');
+                $submitBtn.prop('disabled', true).addClass('loading');
+
+                api.createStop(stopData)
+                    .done(() => {
+                        savedStopState = null;
+                        window.location.reload();
+                    })
+                    .fail((xhr) => {
+                        if (xhr.status === 401) {
+                            window.location.href = '/login';
+                            return;
+                        }
+                        alert('Помилка збереження зупинки');
+                    })
+                    .always(() => {
+                        $submitBtn.prop('disabled', false).removeClass('loading');
+                    });
+            }
         });
 
         const $modalBody = $('#modal-body-content');
+        const $form = $modalBody.find('form');
         const $submitBtn = $modalBody.find('#btn-submit-stop');
         const $suggestions = $modalBody.find('#search-suggestions');
         const $searchIcon = $modalBody.find('.search-icon');
@@ -174,16 +187,6 @@
             if (savedStopState.latitude) $modalBody.find('#stop-lat').val(savedStopState.latitude);
             if (savedStopState.longitude) $modalBody.find('#stop-lon').val(savedStopState.longitude);
         }
-
-        function validateForm() {
-            const name = $modalBody.find('#stop-name').val().trim();
-            const lat = $modalBody.find('#stop-lat').val().trim();
-            const lon = $modalBody.find('#stop-lon').val().trim();
-            $submitBtn.prop('disabled', !(name && lat && lon));
-        }
-
-        validateForm();
-        $modalBody.on('input', '#stop-name, #stop-lat, #stop-lon', validateForm);
 
         function fetchSuggestions(query) {
             if (!query.trim()) {
@@ -205,13 +208,15 @@
                     $.each(data, function (idx, item) {
                         const displayName = item.display_name.split(',')[0];
                         const $btn = $(`
-                            <button type="button" class="suggestion-item">
-                                <span class="pin">📍</span>
-                                <div class="text-block">
-                                    <span class="main-text">${displayName}</span>
-                                    <span class="full-text">${item.display_name}</span>
-                                </div>
-                            </button>
+                            <li>
+                                <button type="button" class="suggestion-item">
+                                    <span class="pin">📍</span>
+                                    <div class="text-block">
+                                        <span class="main-text">${displayName}</span>
+                                        <span class="full-text">${item.display_name}</span>
+                                    </div>
+                                </button>
+                            </li>
                         `);
 
                         $btn.on('click', function () {
@@ -223,7 +228,8 @@
                             $modalBody.find('#address-search').val(displayName);
 
                             $suggestions.addClass('hidden').empty();
-                            validateForm();
+
+                            $submitBtn.prop('disabled', !$form.valid());
                         });
 
                         $suggestions.append($btn);
@@ -258,7 +264,7 @@
                 addressSearch: $modalBody.find('#address-search').val()
             };
 
-            window.Modal.close();
+            Modal.close();
             temporaryCoords = null;
 
             $('#banner-text').text('Натисніть на карту, щоб обрати координати зупинки');
@@ -276,7 +282,6 @@
         });
     }
 
-    // === 5. ІВЕНТИ БАНЕРА ===
     $('#btn-banner-confirm').on('click', function () {
         if (!savedStopState) return;
 

@@ -1,0 +1,194 @@
+﻿/* Vehicle Sidebar Layout */
+.sidebar {
+    background-color: var(--color-bg);
+    padding: var(--space-4);
+    border-radius: var(--radius-lg);
+    border: 1px solid var(--color-border);
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-4);
+}
+
+.sidebar-header {
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.sidebar-title {
+    font-size: 0.875rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--color-muted);
+    margin: 0;
+}
+
+/* Vehicle List Styles */
+.vehicle-list {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
+    max-height: var(--map-min-h);
+    overflow-y: auto;
+}
+
+.vehicle-item {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
+    padding: var(--space-3, 12px);
+    background-color: var(--color-surface, #fff);
+    border: 1px solid var(--color-border, #e5e7eb);
+    border-radius: var(--radius-md, 6px);
+    transition: background-color 0.2s ease, border-color 0.2s ease;
+    position: relative;
+}
+
+    .vehicle-item:hover {
+        background-color: var(--color-surface-hover, #f9fafb);
+    }
+
+.vehicle-main-info {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.vehicle-meta {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2, 8px);
+}
+
+.vehicle-plate {
+    font-weight: 600;
+    font-size: 0.875rem;
+    color: var(--color-text);
+}
+
+.status-indicator {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    display: inline-block;
+    flex-shrink: 0; 
+    background-color: #94a3b8; 
+    position: relative;
+}
+
+.status-Active,
+.status-OnRoute {
+    background-color: #22c55e; 
+    box-shadow: 0 0 8px rgba(34, 197, 94, 0.5);
+}
+
+.status-InGarage,
+.status-Maintenance {
+    background-color: #f59e0b;
+}
+
+.status-Broken,
+.status-Disabled {
+    background-color: #ef4444; 
+}
+
+.status-OnRoute::after {
+    content: '';
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    background: inherit;
+    animation: status-pulse 2s infinite ease-in-out;
+    opacity: 0.4;
+    left: 0;
+    top: 0;
+}
+
+@keyframes status-pulse {
+    0% {
+        transform: scale(1);
+        opacity: 0.4;
+    }
+
+    100% {
+        transform: scale(2.5);
+        opacity: 0;
+    }
+}
+
+/* Badge styling */
+.vehicle-badge {
+    font-size: 0.75rem;
+    padding: 2px 6px;
+    border-radius: var(--radius-sm, 4px);
+    background-color: var(--color-border, #e5e7eb);
+    color: var(--color-text-muted, #4b5563);
+    font-weight: 500;
+    margin-left: auto; /* Притискає бейдж до правого краю */
+}
+
+.vehicle-subtext {
+    font-size: 0.75rem;
+    color: var(--color-muted, #6b7280);
+}
+
+.vehicle-route-info {
+    font-size: 0.75rem;
+    color: var(--color-text, #374151);
+    font-weight: 500;
+}
+
+.vehicle-inline-controls {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    width: 100%;
+    margin-top: 8px;
+    min-width: 0; 
+}
+
+    .vehicle-inline-controls .form-input.input-sm {
+        flex: 1; 
+        min-width: 0; 
+        width: 100%;
+        padding-right: 20px; 
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+.vehicle-actions {
+    flex-shrink: 0;
+}
+
+.input-sm {
+    height: 28px;
+    padding: 2px 8px;
+    font-size: 0.75rem;
+    flex: 1;
+    min-width: 0;
+}
+
+/* Actions logic mirroring hover animations */
+.vehicle-actions {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    transition: opacity 0.2s ease;
+    flex-shrink: 0;
+}
+
+.vehicle-item:hover .vehicle-actions {
+    opacity: 1;
+}
+
+.icon-btn img {
+    width: 14px;
+    height: 14px;
+    display: block;
+}

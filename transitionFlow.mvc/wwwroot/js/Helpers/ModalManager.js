@@ -16,26 +16,37 @@
         });
     }
 
-    open(title, templateId, onSubmitCallback = null) {
+    open(title, templateId, handlerOrRules = null) {
         this.$title.text(title);
         const htmlContent = $(templateId).html();
         this.$body.html(htmlContent);
         this.$modal.addClass('is-active');
 
-        if (onSubmitCallback) {
-            this.$body.find('form').on('submit', function (e) {
+        if (!handlerOrRules) return;
+
+        const $form = this.$body.find('form');
+        if (!$form.length) return;
+
+        if (typeof handlerOrRules === 'function') {
+            $form.on('submit', function (e) {
                 e.preventDefault();
-                onSubmitCallback($(this));
+                handlerOrRules($(this));
             });
+        } else {
+            $form.validate(handlerOrRules);
         }
     }
 
     close() {
         this.$modal.removeClass('is-active');
-        setTimeout(() => this.$body.empty(), 250);
+        setTimeout(() => {
+            const $form = this.$body.find('form');
+            if ($form.length) $form.removeData('validator').off();
+            this.$body.empty();
+        }, 250);
     }
 }
 
-$(function () {
-    window.Modal = new ModalManager('app-modal');
-});
+const Modal = new ModalManager('app-modal');
+
+export default Modal;

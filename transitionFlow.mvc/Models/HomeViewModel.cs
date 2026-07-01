@@ -38,8 +38,20 @@
     public class VehicleModel
     {
         public int Id { get; set; }
+        public string PlateNumber { get; set; } = string.Empty;
+        public string Type { get; set; } = string.Empty; 
+        public string Model { get; set; } = string.Empty;
+        public int Capacity { get; set; }
+        public int? RouteId { get; set; } 
         public string Status { get; set; } = string.Empty;
-        public string RouteId { get; set; } = string.Empty;
+        public int CreatedById { get; set; }
+        public string TypeDescription => Type?.ToLowerInvariant() switch
+        {
+            "bus" => "Автобус",
+            "tram" => "Трамвай",
+            "trolleybus" => "Тролейбус",
+            _ => "Невідомо"
+        };
     }
 
     public class HomeUserModel

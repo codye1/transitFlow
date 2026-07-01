@@ -1,4 +1,4 @@
-﻿window.StopSidebarApi = {
+﻿const stopSidebarApi = {
     createStop: function (stopData) {
         return $.ajax({
             url: '/stops',
@@ -24,3 +24,5 @@
         });
     }
 };
+
+export default stopSidebarApi;

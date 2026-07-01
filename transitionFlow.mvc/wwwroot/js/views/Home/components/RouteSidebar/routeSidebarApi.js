@@ -1,4 +1,4 @@
-﻿window.RouteSidebarApi = {
+﻿const routeSidebarApi = {
     createRoute: function (routeData) {
         return $.ajax({
             url: '/routes',
@@ -15,3 +15,5 @@
         });
     }
 };
+
+export default routeSidebarApi;

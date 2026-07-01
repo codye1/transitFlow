@@ -1,10 +1,10 @@
-﻿window.RouteSidebarValidator = {
+﻿const routeSidebarValidator = {
     initRouteCustomRules: function () {
         if (typeof $.validator !== "undefined" && !$.validator.methods.minStops) {
             $.validator.addMethod("minStops", function (value, element, minCount) {
                 const listSelector = $(element).data('stops-list-target') || '#selected-stops-list';
-                const stopsCount = $(listSelector).find('.selected-stop-item').length;
-                return stopsCount >= minCount;
+                console.log($(listSelector).find('.selected-stop-item').length);
+                return $(listSelector).find('.selected-stop-item').length >= minCount;
             }, "Необхідно додати мінімум {0} зупинки.");
         }
     },
@@ -19,6 +19,9 @@
             },
             color: {
                 required: true
+            },
+            selectedStops: {
+                minStops: 2
             }
         },
         messages: {
@@ -30,7 +33,12 @@
             },
             color: {
                 required: "Оберіть колір мітки."
+            },
+            selectedStops: {
+                minStops: "Необхідно додати мінімум 2 зупинки."
             }
         }
     }
 };
+
+export default routeSidebarValidator;
