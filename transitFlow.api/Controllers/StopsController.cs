@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System.Security.Claims;
 using transitFlow.api.Models;
+using transitFlow.api.Models.DTO;
 using transitFlow.api.Models.DTO.Stop;
 using transitFlow.api.Repositories;
 
@@ -22,7 +23,7 @@ namespace transitFlow.api.Controllers
         [HttpGet]
         public async Task<ActionResult> GetStops([FromQuery] int? afterId, [FromQuery] int take = 10, [FromQuery] int? routeId = null)
         {
-            if (take < 1 || take > 100) take = 10;
+            if (take is < 1 or > 100) take = 10;
 
             var stops = await _stopRepository.GetStopsCursorAsync(afterId, take, routeId);
             var stopList = stops.ToList();
@@ -58,7 +59,7 @@ namespace transitFlow.api.Controllers
             var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
             if (string.IsNullOrEmpty(userIdClaim) || !int.TryParse(userIdClaim, out int userId))
             {
-                return Unauthorized(ApiErrors.Single("Unauthorized", "User ID not found in token."));
+                return Unauthorized(ApiErrors.General("User ID not found in token."));
             }
 
             var stop = new Stop
@@ -79,7 +80,7 @@ namespace transitFlow.api.Controllers
                 Latitude = stop.Latitude,
                 Longitude = stop.Longitude,
                 CreatedById = stop.CreatedById,
-                CreatedAt = stop.CreatedAt,
+                CreatedAt = stop.CreatedAt
             };
 
             return CreatedAtAction(nameof(GetStops), new { id = stop.Id }, response);
@@ -89,18 +90,22 @@ namespace transitFlow.api.Controllers
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteStop(int id)
         {
-            var stop = await _stopRepository.GetByIdAsync(id);
-            if (stop == null)
-                return NotFound(ApiErrors.Single("NotFound", $"Stop with ID {id} not found."));
-
             var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
             if (string.IsNullOrEmpty(userIdClaim) || !int.TryParse(userIdClaim, out int userId))
-                return Unauthorized(ApiErrors.Single("Unauthorized", "User ID not found in token."));
+            {
+                return Unauthorized(ApiErrors.General("User ID not found in token."));
+            }
 
-            bool isAdminOrModerator = User.IsInRole("admin") || User.IsInRole("moderator");
+            var stop = await _stopRepository.GetByIdAsync(id);
+            if (stop == null)
+            {
+                return NotFound(ApiErrors.General($"Stop with ID {id} not found."));
+            }
 
-            if (!isAdminOrModerator && stop.CreatedById != userId)
-                return StatusCode(StatusCodes.Status403Forbidden, ApiErrors.Single("Forbidden", "You do not have permission to delete this stop."));
+            if (!User.IsInRole("admin") && !User.IsInRole("moderator") && stop.CreatedById != userId)
+            {
+                return StatusCode(StatusCodes.Status403Forbidden, ApiErrors.General("You do not have permission to delete this stop."));
+            }
 
             await _stopRepository.DeleteAsync(stop);
 
@@ -111,17 +116,22 @@ namespace transitFlow.api.Controllers
         [HttpPut("{id}")]
         public async Task<IActionResult> UpdateStop(int id, [FromBody] StopUpdateDto dto)
         {
-            var stop = await _stopRepository.GetByIdAsync(id);
-            if (stop == null)
-                return NotFound(ApiErrors.Single("NotFound", $"Stop with ID {id} not found."));
-
             var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
             if (string.IsNullOrEmpty(userIdClaim) || !int.TryParse(userIdClaim, out int userId))
-                return Unauthorized(ApiErrors.Single("Unauthorized", "User ID not found in token."));
+            {
+                return Unauthorized(ApiErrors.General("User ID not found in token."));
+            }
 
-            bool isAdminOrModerator = User.IsInRole("admin") || User.IsInRole("moderator");
-            if (!isAdminOrModerator && stop.CreatedById != userId)
-                return StatusCode(StatusCodes.Status403Forbidden, ApiErrors.Single("Forbidden", "You do not have permission to update this stop."));
+            var stop = await _stopRepository.GetByIdAsync(id);
+            if (stop == null)
+            {
+                return NotFound(ApiErrors.General($"Stop with ID {id} not found."));
+            }
+
+            if (!User.IsInRole("admin") && !User.IsInRole("moderator") && stop.CreatedById != userId)
+            {
+                return StatusCode(StatusCodes.Status403Forbidden, ApiErrors.General("You do not have permission to update this stop."));
+            }
 
             stop.Name = dto.Name;
             stop.Latitude = dto.Latitude;

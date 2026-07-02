@@ -1,6 +1,7 @@
 ﻿import api from './vehicleSidebarApi.js';
 import validator from './vehicleSidebarValidator.js';
 import Modal from '../../../../helpers/ModalManager.js';
+import { showApiErrors } from '../../../../helpers/showApiErrors.js';
 
 $(function () {
     'use strict';
@@ -81,6 +82,11 @@ $(function () {
             .fail((xhr) => {
                 if (xhr.status === 401) {
                     window.location.href = '/login';
+                    return;
+                }
+                if (xhr.status === 400 && xhr.responseJSON?.errors) {
+                    const message = xhr.responseJSON.errors.routeId?.[0] || 'Помилка оновлення маршруту для транспорту';
+                    alert(message);
                     return;
                 }
                 alert('Помилка оновлення маршруту для транспорту');
@@ -198,6 +204,12 @@ $(function () {
                     .fail((xhr) => {
                         if (xhr.status === 401) {
                             window.location.href = '/login';
+                            return;
+                        }
+                            console.log('API Errors:', xhr.responseJSON);
+
+                        if (xhr.status === 400 && xhr.responseJSON?.errors) {
+                            showApiErrors($form, xhr.responseJSON.errors);
                             return;
                         }
                         alert('Помилка збереження нового транспортного засобу');

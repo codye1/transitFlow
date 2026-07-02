@@ -1,6 +1,7 @@
 ﻿import api from './stopSidebarApi.js';
 import validator from './stopSidebarValidator.js';
 import Modal from '../../../../helpers/ModalManager.js';
+import { showApiErrors } from '../../../../helpers/showApiErrors.js';
 
 $(function () {
     'use strict';
@@ -90,6 +91,15 @@ $(function () {
             .fail((xhr) => {
                 if (xhr.status === 401) {
                     window.location.href = '/login';
+                    return;
+                }
+                if (xhr.status === 400 && xhr.responseJSON?.errors) {
+                    const message = xhr.responseJSON.errors.name?.[0]
+                        || xhr.responseJSON.errors.latitude?.[0]
+                        || xhr.responseJSON.errors.longitude?.[0]
+                        || xhr.responseJSON.errors._general?.[0]
+                        || 'Помилка оновлення назви зупинки';
+                    alert(message);
                     return;
                 }
                 alert('Помилка оновлення назви зупинки');
@@ -191,6 +201,10 @@ $(function () {
                     .fail((xhr) => {
                         if (xhr.status === 401) {
                             window.location.href = '/login';
+                            return;
+                        }
+                        if (xhr.status === 400 && xhr.responseJSON?.errors) {
+                            showApiErrors($form, xhr.responseJSON.errors);
                             return;
                         }
                         alert('Помилка збереження зупинки');

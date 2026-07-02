@@ -24,7 +24,7 @@ namespace TransitFlow.mvc.Controllers
                 var result = await response.Content.ReadFromJsonAsync<PagedResponseDto<RouteModel>>();
                 return Ok(result);
             }
-            return BadRequest();
+            return await ForwardApiErrorAsync(response);
         }
 
         [HttpPost("/routes")]
@@ -33,14 +33,18 @@ namespace TransitFlow.mvc.Controllers
             var client = _httpClientFactory.CreateClient("TransitApi");
             var response = await client.PostAsJsonAsync("/routes", routeData);
 
-            if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized)
-                return Unauthorized();
             if (!response.IsSuccessStatusCode)
-                return BadRequest();
+                return await ForwardApiErrorAsync(response);
 
             var createdRoute = await response.Content.ReadFromJsonAsync<RouteModel>();
             if (createdRoute == null)
-                return BadRequest();
+                return BadRequest(new ApiErrorResponseDto
+                {
+                    Errors = new Dictionary<string, string[]>
+                    {
+                        ["_general"] = new[] { "Unable to read API response." }
+                    }
+                });
 
             var itemModel = new RouteItemViewModel
             {
@@ -58,13 +62,7 @@ namespace TransitFlow.mvc.Controllers
             var response = await client.DeleteAsync($"/routes/{id}");
             if (response.IsSuccessStatusCode)
                 return NoContent();
-            if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized)
-                return Unauthorized();
-            if (response.StatusCode == System.Net.HttpStatusCode.Forbidden)
-                return StatusCode(403);
-            if (response.StatusCode == System.Net.HttpStatusCode.NotFound)
-                return NotFound();
-            return BadRequest();
+            return await ForwardApiErrorAsync(response);
         }
     }
 }

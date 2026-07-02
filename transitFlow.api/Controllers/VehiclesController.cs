@@ -22,14 +22,12 @@ namespace transitFlow.api.Controllers
             _logger = logger;
         }
 
-        // GET: /vehicles
         [HttpGet]
         public async Task<ActionResult> GetVehicles([FromQuery] int? afterId, [FromQuery] int take = 10)
         {
-            if (take < 1 || take > 100) take = 10;
+            if (take is < 1 or > 100) take = 10;
 
             var vehicles = await _vehicleRepository.GetVehiclesCursorAsync(afterId, take);
-
             var vehicleList = vehicles.ToList();
 
             bool hasMore = vehicleList.Count > take;
@@ -49,7 +47,7 @@ namespace transitFlow.api.Controllers
                 Capacity = v.Capacity,
                 CreatedAt = v.CreatedAt,
                 CreatedById = v.CreatedById,
-                Status=v.Status
+                Status = v.Status
             }).ToList();
 
             return Ok(new
@@ -59,36 +57,39 @@ namespace transitFlow.api.Controllers
             });
         }
 
-        // POST: /vehicles
         [HttpPost]
         [Authorize]
         public async Task<ActionResult<VehicleResponseDto>> CreateVehicle([FromBody] CreateVehicleDto dto)
         {
-            if (dto == null) return BadRequest(ApiErrors.Single("ValidationError", "Request body is required."));
+            if (dto is null) return BadRequest(ApiErrors.General("Request body is required."));
+
+            var userIdString = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (string.IsNullOrEmpty(userIdString) || !int.TryParse(userIdString, out int userId))
+            {
+                return Unauthorized(ApiErrors.General("User ID not found in token."));
+            }
+
             _logger.LogInformation("Started validation");
             var (plateExists, routeExists) = await _vehicleRepository.ValidateVehicleCreationAsync(dto.PlateNumber, dto.RouteId);
 
-            var errors = new Dictionary<string, string[]>();
+            var errors = new Dictionary<string, IEnumerable<string>>(StringComparer.OrdinalIgnoreCase);
 
             if (plateExists)
             {
-                errors.Add(nameof(dto.PlateNumber), new[] { "A vehicle with this plate number already exists." });
+                errors[nameof(dto.PlateNumber)] = ["A vehicle with this plate number already exists."];
             }
 
             if (!routeExists)
             {
-                errors.Add(nameof(dto.RouteId), new[] { "The specified Route ID does not exist." });
+                errors[nameof(dto.RouteId)] = ["The specified Route ID does not exist."];
             }
 
             if (errors.Count > 0)
             {
-                var validationErrors = errors.SelectMany(error => error.Value.Select(message => new ApiErrorDto(error.Key, message))).ToList();
-                return BadRequest(validationErrors);
+                return BadRequest(ApiErrors.FromDictionary(errors));
             }
+
             _logger.LogInformation("Finished VALIDATION");
-            var userIdString = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-            if (string.IsNullOrEmpty(userIdString) || !int.TryParse(userIdString, out int userId))
-                return Unauthorized(ApiErrors.Single("Unauthorized", "User ID not found in token."));
 
             var newVehicle = new Models.Vehicle
             {
@@ -101,6 +102,7 @@ namespace transitFlow.api.Controllers
                 Status = dto.Status,
                 CreatedById = userId
             };
+
             _logger.LogInformation("Creating vehicle");
             await _vehicleRepository.CreateVehicleAsync(newVehicle);
 
@@ -116,30 +118,29 @@ namespace transitFlow.api.Controllers
                 CreatedAt = newVehicle.CreatedAt,
                 CreatedById = newVehicle.CreatedById
             };
+
             _logger.LogInformation("Created, returning");
             return CreatedAtAction(nameof(GetVehicles), new { id = newVehicle.Id }, response);
         }
 
-        // DELETE: /vehicles/5
         [HttpDelete("{id}")]
-        [Authorize] 
+        [Authorize]
         public async Task<IActionResult> DeleteVehicle(int id)
         {
             var deleted = await _vehicleRepository.DeleteVehicleAsync(id);
-            if (!deleted) return NotFound(ApiErrors.Single("NotFound", $"Vehicle with ID {id} not found."));
+            if (!deleted) return NotFound(ApiErrors.General($"Vehicle with ID {id} not found."));
 
             return NoContent();
         }
 
-        // PATCH: /vehicles/5
         [HttpPatch("{id}")]
         [Authorize]
         public async Task<ActionResult<VehicleResponseDto>> PatchVehicle(int id, [FromBody] PatchVehicleDto dto)
         {
-            if (dto == null) return BadRequest(ApiErrors.Single("ValidationError", "Request body is required."));
+            if (dto is null) return BadRequest(ApiErrors.General("Request body is required."));
 
             var vehicle = await _vehicleRepository.GetVehicleByIdAsync(id);
-            if (vehicle == null) return NotFound(ApiErrors.Single("NotFound", $"Vehicle with ID {id} not found."));
+            if (vehicle == null) return NotFound(ApiErrors.General($"Vehicle with ID {id} not found."));
 
             bool hasChanges = false;
 

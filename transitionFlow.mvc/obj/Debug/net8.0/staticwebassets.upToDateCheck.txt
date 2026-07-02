@@ -3,7 +3,6 @@ wwwroot\css\views\auth.css
 wwwroot\css\views\Home\components\RouteSidebar\route-sidebar.css
 wwwroot\css\views\Home\components\StopSidebar\stop-sidebar.css
 wwwroot\css\views\Home\components\VehicleSidebar\vehicle-sidebar.css
-wwwroot\css\views\Home\home.css
 wwwroot\favicon.ico
 wwwroot\images\icons\accept.svg
 wwwroot\images\icons\add.svg
@@ -12,6 +11,7 @@ wwwroot\images\icons\delete.svg
 wwwroot\images\icons\edit.svg
 wwwroot\js\helpers\handleApiErrors.js
 wwwroot\js\helpers\ModalManager.js
+wwwroot\js\helpers\showApiErrors.js
 wwwroot\js\helpers\TransitMap.js
 wwwroot\js\site.js
 wwwroot\js\views\Auth\auth.js
@@ -84,3 +84,4 @@ wwwroot\lib\jquery\dist\jquery.js
 wwwroot\lib\jquery\dist\jquery.min.js
 wwwroot\lib\jquery\dist\jquery.min.map
 wwwroot\lib\jquery\LICENSE.txt
+wwwroot\css\views\Home\home.css

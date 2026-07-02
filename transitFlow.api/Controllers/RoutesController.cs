@@ -1,7 +1,9 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using System.Security.Claims;
 using transitFlow.api.Models;
+using transitFlow.api.Models.DTO;
 using transitFlow.api.Models.DTO.Route;
 using transitFlow.api.Repositories;
 using transitFlow.api.Repositories.Route;
@@ -63,15 +65,32 @@ namespace transitFlow.api.Controllers
         [Authorize]
         public async Task<ActionResult<RouteResponseDto>> CreateRoute([FromBody] CreateRouteDto dto)
         {
-            if (dto == null) return BadRequest(ApiErrors.Single("ValidationError", "Request body is required."));
+            if (dto == null) return BadRequest(ApiErrors.General("Request body is required."));
 
             var userIdString = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
             if (string.IsNullOrEmpty(userIdString) || !int.TryParse(userIdString, out int userId))
-                return Unauthorized(ApiErrors.Single("Unauthorized", "User ID not found in token."));
-            
+            {
+                return Unauthorized();
+            }
 
-            if (!await _stopRepository.AreStopsValidAsync(dto.SelectedStops))
-                return BadRequest(ApiErrors.Single("ValidationError", "One or more selected stops do not exist."));
+            var errors = new Dictionary<string, IEnumerable<string>>(StringComparer.OrdinalIgnoreCase);
+
+            var stopsValid = await _stopRepository.AreStopsValidAsync(dto.SelectedStops);
+            if (!stopsValid)
+            {
+                errors[nameof(dto.SelectedStops)] = new[] { "One or more selected stops do not exist." };
+            }
+
+            var routeNumberExists = await _routeRepository.RouteNumberExistsAsync(dto.Number);
+            if (routeNumberExists)
+            {
+                errors[nameof(dto.Number)] = new[] { "A route with this number already exists." };
+            }
+
+            if (errors.Count > 0)
+            {
+                return BadRequest(ApiErrors.FromDictionary(errors));
+            }
 
             var newRoute = new RouteEntity
             {
@@ -89,7 +108,7 @@ namespace transitFlow.api.Controllers
                     newRoute.RouteStops.Add(new RouteStop
                     {
                         StopId = dto.SelectedStops[i],
-                        SequenceNumber = i + 1 
+                        SequenceNumber = i + 1
                     });
                 }
             }
@@ -117,7 +136,7 @@ namespace transitFlow.api.Controllers
         public async Task<IActionResult> DeleteRoute(int id)
         {
             var deleted = await _routeRepository.DeleteRouteAsync(id);
-            if (!deleted) return NotFound(ApiErrors.Single("NotFound", $"Route with ID {id} not found."));
+            if (!deleted) return NotFound(ApiErrors.General($"Route with ID {id} not found."));
 
             return NoContent();
         }

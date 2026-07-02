@@ -30,10 +30,7 @@ namespace TransitFlow.mvc.Controllers
                 return Ok(result);
             }
 
-            if (response.StatusCode == HttpStatusCode.Unauthorized)
-                return Unauthorized();
-
-            return BadRequest();
+            return await ForwardApiErrorAsync(response);
         }
 
         // POST: /vehicles
@@ -47,7 +44,13 @@ namespace TransitFlow.mvc.Controllers
             {
                 var createdVehicle = await response.Content.ReadFromJsonAsync<VehicleModel>();
                 if (createdVehicle == null)
-                    return BadRequest();
+                    return BadRequest(new ApiErrorResponseDto
+                    {
+                        Errors = new Dictionary<string, string[]>
+                        {
+                            ["_general"] = new[] { "Unable to read API response." }
+                        }
+                    });
 
                 var routesResponse = await client.GetAsync("/routes?take=100");
                 var routes = new List<RouteModel>();
@@ -74,16 +77,7 @@ namespace TransitFlow.mvc.Controllers
                 return PartialView("~/Views/Home/Components/VehicleSidebar/Partials/_VehicleItem.cshtml", itemModel);
             }
 
-            if (response.StatusCode == HttpStatusCode.Unauthorized)
-                return Unauthorized();
-
-            if (response.StatusCode == HttpStatusCode.BadRequest)
-            {
-                var errorResult = await response.Content.ReadFromJsonAsync<object>();
-                return BadRequest(errorResult);
-            }
-
-            return BadRequest();
+            return await ForwardApiErrorAsync(response);
         }
 
         // DELETE: /vehicles/{id}
@@ -96,16 +90,7 @@ namespace TransitFlow.mvc.Controllers
             if (response.IsSuccessStatusCode)
                 return NoContent();
 
-            if (response.StatusCode == HttpStatusCode.Unauthorized)
-                return Unauthorized();
-
-            if (response.StatusCode == HttpStatusCode.Forbidden)
-                return StatusCode(403);
-
-            if (response.StatusCode == HttpStatusCode.NotFound)
-                return NotFound();
-
-            return BadRequest();
+            return await ForwardApiErrorAsync(response);
         }
 
         // PATCH: /vehicles/{id}
@@ -121,22 +106,7 @@ namespace TransitFlow.mvc.Controllers
                 return Ok(result);
             }
 
-            if (response.StatusCode == HttpStatusCode.Unauthorized)
-                return Unauthorized();
-
-            if (response.StatusCode == HttpStatusCode.Forbidden)
-                return StatusCode(403);
-
-            if (response.StatusCode == HttpStatusCode.NotFound)
-                return NotFound();
-
-            if (response.StatusCode == HttpStatusCode.BadRequest)
-            {
-                var errorResult = await response.Content.ReadFromJsonAsync<object>();
-                return BadRequest(errorResult);
-            }
-
-            return BadRequest();
+            return await ForwardApiErrorAsync(response);
         }
     }
 }

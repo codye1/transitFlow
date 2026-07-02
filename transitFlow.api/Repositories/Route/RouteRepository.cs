@@ -2,7 +2,7 @@
 using transitFlow.api.Data;
 using transitFlow.api.Models;
 using transitFlow.api.Repositories.Route;
-using RouteEntity = transitFlow.api.Models.Route; 
+using RouteEntity = transitFlow.api.Models.Route;
 namespace transitFlow.api.Repositories
 {
     public class RouteRepository : IRouteRepository
@@ -27,6 +27,11 @@ namespace transitFlow.api.Repositories
             return await _context.Routes
                 .Include(r => r.RouteStops)
                 .FirstOrDefaultAsync(r => r.Id == id);
+        }
+
+        public async Task<bool> RouteNumberExistsAsync(string number)
+        {
+            return await _context.Routes.AnyAsync(r => r.Number == number);
         }
 
         public async Task<RouteEntity> CreateRouteAsync(RouteEntity route)
