@@ -4,8 +4,7 @@
             url: '/vehicles',
             method: 'POST',
             contentType: 'application/json',
-            data: JSON.stringify(vehicleData),
-            dataType: 'html'
+            data: JSON.stringify(vehicleData)
         });
     },
 
@@ -21,7 +20,6 @@
     },
 
     updateStatus: function (vehicleId, status) {
-        console.log(status);
         return $.ajax({
             url: `/vehicles/${vehicleId}`,
             method: 'PATCH',

@@ -4,7 +4,7 @@ using TransitFlow.mvc.Models.DTO;
 
 namespace TransitFlow.mvc.Controllers
 {
-    public class AuthController : Controller
+    public class AuthController : BaseController
     {
         private readonly IHttpClientFactory _httpClientFactory;
 
@@ -49,7 +49,7 @@ namespace TransitFlow.mvc.Controllers
                 }
             }
 
-            return BadRequest();
+            return await ForwardApiErrorAsync(response);
         }
 
         [HttpPost("/auth/register")]
@@ -63,7 +63,7 @@ namespace TransitFlow.mvc.Controllers
                 return Ok();
             }
 
-            return BadRequest();
+            return await ForwardApiErrorAsync(response);
         }
     }
 }

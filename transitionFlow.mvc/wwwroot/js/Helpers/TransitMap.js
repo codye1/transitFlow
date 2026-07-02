@@ -32,7 +32,7 @@
     }
 
     createVehicleIcon(color, type) {
-        const emoji = type === "Rram" ? "🚋" : type === "trolleybus" ? "🚎" : type === "minibus" ? "🚐" : "🚌";
+        const emoji = type === "Tram" ? "🚋" : type === "Trolleybus" ? "🚎" : type === "Minibus" ? "🚐" : "🚌";
         return L.divIcon({
             className: "",
             html: `<div style="background:${color};color:white;border-radius:50%;width:32px;height:32px;display:flex;align-items:center;justify-content:center;font-size:16px;box-shadow:0 3px 8px rgba(0,0,0,0.35);border:2px solid white;">${emoji}</div>`,
@@ -101,8 +101,10 @@
                 if (this.vehicleMarkers[v.id]) {
                     this.vehicleMarkers[v.id].setLatLng(currentPos);
                 } else {
-                    const typeLabel = v.type === "tram" ? "Трамвай" : v.type === "trolleybus" ? "Тролейбус" : "Автобус";
+                    const typeLabel = v.type === "Tram" ? "Трамвай" : v.type === "trolleybus" ? "Тролейбус" : "Автобус";
+                    console.log(v.type
 
+                    )
                     const marker = L.marker(currentPos, {
                         icon: this.createVehicleIcon(routeColor, v.type)
                     }).bindPopup(`

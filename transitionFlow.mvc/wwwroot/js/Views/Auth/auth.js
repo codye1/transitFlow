@@ -1,6 +1,6 @@
 ﻿import { login, register } from './authApi.js';
 import { initCustomRules, loginRules, registerRules } from './authValidator.js';
-import { handleApiErrors } from '../../helpers/handleApiErrors.js';
+import { showApiErrors } from '../../helpers/showApiErrors.js';
 
 $(function () {
     initCustomRules();
@@ -16,6 +16,7 @@ $(function () {
         ...loginRules,
         submitHandler: function (form, e) {
             e.preventDefault();
+            const $form = $(form);
             const errorBox = $('#loginError').hide();
             const btn = $(form).find('button[type="submit"]');
 
@@ -27,6 +28,8 @@ $(function () {
                 })
                 .fail(function (xhr) {
                     handleApiErrors(xhr, errorBox, "Помилка авторизації.");
+
+                    showApiErrors($form, xhr.responseJSON.errors);
                 })
                 .always(function () {
                     btn.prop('disabled', false).removeClass('loading');
@@ -38,6 +41,7 @@ $(function () {
         ...registerRules,
         submitHandler: function (form, e) {
             e.preventDefault();
+            const $form = $(form);
             const errorBox = $('#registerError').hide();
             const btn = $(form).find('button[type="submit"]');
 
@@ -49,7 +53,7 @@ $(function () {
                     togglePanels();
                 })
                 .fail(function (xhr) {
-                    handleApiErrors(xhr, errorBox, "Помилка реєстрації.");
+                    showApiErrors($form, xhr.responseJSON.errors);
                 })
                 .always(function () {
                     btn.prop('disabled', false).removeClass('loading');

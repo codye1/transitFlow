@@ -24,7 +24,13 @@ namespace TransitFlow.mvc.Controllers
             {
                 var createdStop = await response.Content.ReadFromJsonAsync<StopModel>();
                 if (createdStop == null)
-                    return BadRequest();
+                    return BadRequest(new ApiErrorResponseDto
+                    {
+                        Errors = new Dictionary<string, string[]>
+                        {
+                            ["_general"] = new[] { "Unable to read API response." }
+                        }
+                    });
 
                 var itemModel = new StopItemViewModel
                 {
@@ -34,10 +40,8 @@ namespace TransitFlow.mvc.Controllers
 
                 return PartialView("~/Views/Home/Components/StopSidebar/Partials/_StopItem.cshtml", itemModel);
             }
-            if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized)
-                return Unauthorized();
 
-            return BadRequest();
+            return await ForwardApiErrorAsync(response);
         }
 
         [HttpDelete("/stops/{id}")]
@@ -49,16 +53,7 @@ namespace TransitFlow.mvc.Controllers
             if (response.IsSuccessStatusCode)
                 return NoContent();
 
-            if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized)
-                return Unauthorized();
-
-            if (response.StatusCode == System.Net.HttpStatusCode.Forbidden)
-                return StatusCode(403);
-
-            if (response.StatusCode == System.Net.HttpStatusCode.NotFound)
-                return NotFound();
-
-            return BadRequest();
+            return await ForwardApiErrorAsync(response);
         }
 
         [HttpPut("/stops/{id}")]
@@ -72,16 +67,7 @@ namespace TransitFlow.mvc.Controllers
             if (response.IsSuccessStatusCode)
                 return NoContent();
 
-            if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized)
-                return Unauthorized();
-
-            if (response.StatusCode == System.Net.HttpStatusCode.Forbidden)
-                return StatusCode(403);
-
-            if (response.StatusCode == System.Net.HttpStatusCode.NotFound)
-                return NotFound();
-
-            return BadRequest();
+            return await ForwardApiErrorAsync(response);
         }
     }
 

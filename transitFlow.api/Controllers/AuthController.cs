@@ -60,13 +60,13 @@ namespace transitFlow.Controllers
             var user = await _userManager.FindByEmailAsync(dto.Email);
             if (user == null)
             {
-                return Unauthorized(ApiErrors.Single("InvalidCredentials", "Invalid email or password."));
+                return Unauthorized(ApiErrors.General("Invalid email or password."));
             }
 
             var passwordValid = await _userManager.CheckPasswordAsync(user, dto.Password);
             if (!passwordValid)
             {
-                return Unauthorized(ApiErrors.Single("InvalidCredentials", "Invalid email or password."));
+                return Unauthorized(ApiErrors.General("Invalid email or password."));
             }
 
             var response = await IssueTokensAsync(user);
@@ -79,14 +79,14 @@ namespace transitFlow.Controllers
             var refreshTokenValue = Request.Cookies["refreshToken"];
             if (string.IsNullOrEmpty(refreshTokenValue))
             {
-                return Unauthorized(ApiErrors.Single("MissingToken", "No refresh token provided."));
+                return Unauthorized(ApiErrors.General("No refresh token provided."));
             }
 
             var existingToken = await _tokenRepository.GetByTokenAsync(refreshTokenValue);
 
             if (existingToken == null || !existingToken.IsActive)
             {
-                return Unauthorized(ApiErrors.Single("InvalidToken", "Invalid or expired refresh token."));
+                return Unauthorized(ApiErrors.General("Invalid or expired refresh token."));
             }
 
             existingToken.RevokedAt = DateTime.UtcNow;

@@ -1,6 +1,7 @@
 ﻿import api from './routeSidebarApi.js';
 import validator from './routeSidebarValidator.js';
 import Modal from '../../../../helpers/ModalManager.js';
+import { showApiErrors } from '../../../../helpers/showApiErrors.js';
 
 $(function () {
     'use strict';
@@ -99,13 +100,13 @@ $(function () {
                     .done(async (html) => {
                         savedRouteState = null;
 
-                        const $newItem = $(html);   
+                        const $newItem = $(html);
                         $('.route-list').append($newItem);
 
                         const newRouteId = Number($newItem.data('id'));
                         const newRouteColor = $newItem.attr('data-color');
-                        const newRouteStops = $newItem.data('stops'); 
-                        
+                        const newRouteStops = $newItem.data('stops');
+
                         const map = getMap();
                         if (map && typeof map.addRoute === 'function' && Array.isArray(newRouteStops) && newRouteStops.length >= 2) {
                             await map.addRoute(newRouteId, newRouteStops, newRouteColor);
@@ -118,6 +119,10 @@ $(function () {
                     .fail((xhr) => {
                         if (xhr.status === 401) {
                             window.location.href = '/login';
+                            return;
+                        }
+                        if (xhr.status === 400 && xhr.responseJSON?.errors) {
+                            showApiErrors($form, xhr.responseJSON.errors);
                             return;
                         }
                         alert('Помилка збереження маршруту');
