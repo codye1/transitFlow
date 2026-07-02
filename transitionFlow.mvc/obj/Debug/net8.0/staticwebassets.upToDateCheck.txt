@@ -6,10 +6,14 @@ wwwroot\css\views\Home\components\VehicleSidebar\vehicle-sidebar.css
 wwwroot\css\views\Home\home.css
 wwwroot\favicon.ico
 wwwroot\images\icons\accept.svg
+wwwroot\images\icons\activityIcon.svg
 wwwroot\images\icons\add.svg
 wwwroot\images\icons\close.svg
 wwwroot\images\icons\delete.svg
 wwwroot\images\icons\edit.svg
+wwwroot\images\icons\routeIcon.svg
+wwwroot\images\icons\stopIcon.svg
+wwwroot\images\icons\vehicleIcon.svg
 wwwroot\js\helpers\handleApiErrors.js
 wwwroot\js\helpers\ModalManager.js
 wwwroot\js\helpers\showApiErrors.js

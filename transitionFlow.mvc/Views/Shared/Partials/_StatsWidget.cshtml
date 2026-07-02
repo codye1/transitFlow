@@ -9,7 +9,7 @@
 <div class="stats-container">
     <div class="stat-badge">
         <div class="stat-badge-header">
-            <svg class="stat-icon icon-blue" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="6" cy="19" r="3" /><path d="M9 19h8.5a3.5 3.5 0 0 0 0-7h-11a3.5 3.5 0 0 1 0-7H15" /><circle cx="18" cy="5" r="3" /></svg>
+            <img class="stat-icon " src="~/images/icons/routeIcon.svg" alt="RouteIcon" />
             <span class="stat-label">Маршрутів</span>
         </div>
         <div class="stat-value">@Model.Routes.Count</div>
@@ -18,7 +18,7 @@
 
     <div class="stat-badge">
         <div class="stat-badge-header">
-            <svg class="stat-icon icon-emerald" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z" /><circle cx="12" cy="10" r="3" /></svg>
+            <img class="stat-icon " src="~/images/icons/stopIcon.svg" alt="StopIcon" />
             <span class="stat-label">Зупинок</span>
         </div>
         <div class="stat-value">@Model.Stops.Count</div>
@@ -27,7 +27,8 @@
 
     <div class="stat-badge">
         <div class="stat-badge-header">
-            <svg class="stat-icon icon-amber" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 6v6" /><path d="M15 6v6" /><path d="M2 12h19.6" /><path d="M18 18h3s.5-1.7.8-2.8c.1-.4.2-.8.2-1.2 0-.4-.1-.8-.2-1.2l-1.4-5C20.1 6.8 19.1 6 18 6H4a2 2 0 0 0-2 2v10h3" /><circle cx="7" cy="18" r="2" /><path d="M9 18h5" /><circle cx="16" cy="18" r="2" /></svg>
+            <img class="stat-icon " src="~/images/icons/vehicleIcon.svg" alt="VehicleIcon" />
+
             <span class="stat-label">Транспорт</span>
         </div>
         <div class="stat-value">@Model.Vehicles.Count</div>
@@ -36,7 +37,7 @@
 
     <div class="stat-badge">
         <div class="stat-badge-header">
-            <svg class="stat-icon icon-purple" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 12h-4l-3 9L9 3l-3 9H2" /></svg>
+            <img class="stat-icon " src="~/images/icons/activityIcon.svg" alt="ActivityIcon" />
             <span class="stat-label">Активність</span>
         </div>
         <div class="stat-value">@activityPct%</div>
