@@ -3,6 +3,7 @@ wwwroot\css\views\auth.css
 wwwroot\css\views\Home\components\RouteSidebar\route-sidebar.css
 wwwroot\css\views\Home\components\StopSidebar\stop-sidebar.css
 wwwroot\css\views\Home\components\VehicleSidebar\vehicle-sidebar.css
+wwwroot\css\views\Home\home.css
 wwwroot\favicon.ico
 wwwroot\images\icons\accept.svg
 wwwroot\images\icons\add.svg
@@ -84,4 +85,3 @@ wwwroot\lib\jquery\dist\jquery.js
 wwwroot\lib\jquery\dist\jquery.min.js
 wwwroot\lib\jquery\dist\jquery.min.map
 wwwroot\lib\jquery\LICENSE.txt
-wwwroot\css\views\Home\home.css
